@@ -16,8 +16,7 @@ import { useDispatch } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
-import { Spacing, BorderRadius, Typography } from '../../src/theme';
-import { useTheme } from '../../src/theme';
+import { Colors, Spacing, BorderRadius, Typography } from '../../src/theme';
 import { MealType, FoodItem, Meal } from '../../src/models';
 import { addMeal } from '../../src/store';
 import { calculateMealTotals, calculateNutrition } from '../../src/utils/calculator';
@@ -34,7 +33,6 @@ import {
 import { Alert } from '../../src/utils/alert';
 
 export default function AddMealScreen() {
-  const { colors } = useTheme();
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const meals = useSelector((state: RootState) => state.meals.meals) || [];
@@ -237,8 +235,6 @@ export default function AddMealScreen() {
   const mealTotals = calculateMealTotals(currentFoods);
   const selectedMealType = MEAL_TYPES.find((t) => t.value === mealType);
 
-  const styles = useAddMealStyles(colors);
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -278,11 +274,11 @@ export default function AddMealScreen() {
           <Text style={styles.sectionTitle}>Photo (Optional)</Text>
           <View style={styles.photoButtons}>
             <TouchableOpacity style={styles.photoButton} onPress={takePhoto}>
-              <Ionicons name="camera" size={24} color={colors.primary} />
+              <Ionicons name="camera" size={24} color={Colors.light.primary} />
               <Text style={styles.photoButtonText}>Take Photo</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.photoButton} onPress={pickImage}>
-              <Ionicons name="image" size={24} color={colors.primary} />
+              <Ionicons name="image" size={24} color={Colors.light.primary} />
               <Text style={styles.photoButtonText}>Choose Photo</Text>
             </TouchableOpacity>
           </View>
@@ -293,7 +289,7 @@ export default function AddMealScreen() {
                 style={styles.removePhoto}
                 onPress={() => setPhotoUri(undefined)}
               >
-                <Ionicons name="close-circle" size={24} color={colors.danger} />
+                <Ionicons name="close-circle" size={24} color={Colors.light.danger} />
               </TouchableOpacity>
             </View>
           )}
@@ -305,12 +301,12 @@ export default function AddMealScreen() {
             style={styles.searchFoodButton}
             onPress={() => setShowFoodSearch(true)}
           >
-            <Ionicons name="search" size={24} color={colors.background} />
+            <Ionicons name="search" size={24} color={Colors.light.background} />
             <View style={styles.searchFoodContent}>
               <Text style={styles.searchFoodTitle}>Search Food Database</Text>
               <Text style={styles.searchFoodSubtitle}>Quickly add common foods</Text>
             </View>
-            <Ionicons name="chevron-forward" size={24} color={colors.background} />
+            <Ionicons name="chevron-forward" size={24} color={Colors.light.background} />
           </TouchableOpacity>
         </View>
 
@@ -410,7 +406,7 @@ export default function AddMealScreen() {
             </View>
 
             <TouchableOpacity style={styles.addButton} onPress={addFoodItem}>
-              <Ionicons name="add" size={20} color={colors.background} />
+              <Ionicons name="add" size={20} color={Colors.light.background} />
               <Text style={styles.addButtonText}>Add to Meal</Text>
             </TouchableOpacity>
           </View>
@@ -429,7 +425,7 @@ export default function AddMealScreen() {
                   </Text>
                 </View>
                 <TouchableOpacity onPress={() => removeFood(food.foodId)}>
-                  <Ionicons name="trash-outline" size={20} color={colors.danger} />
+                  <Ionicons name="trash-outline" size={20} color={Colors.light.danger} />
                 </TouchableOpacity>
               </View>
             ))}
@@ -442,7 +438,7 @@ export default function AddMealScreen() {
               </View>
               <View style={styles.totalsRow}>
                 <Text style={styles.totalLabel}>Sugar:</Text>
-                <Text style={[styles.totalValue, { color: colors.secondary }]}>
+                <Text style={[styles.totalValue, { color: Colors.light.secondary }]}>
                   {mealTotals.totalSugar.toFixed(1)}g
                 </Text>
               </View>
@@ -495,7 +491,7 @@ export default function AddMealScreen() {
           {/* Search Input */}
           <View style={styles.searchSection}>
             <View style={styles.searchInputWrapper}>
-              <Ionicons name="search" size={20} color={colors.textSecondary} />
+              <Ionicons name="search" size={20} color={Colors.light.textSecondary} />
               <TextInput
                 style={styles.searchInput}
                 placeholder="Search foods..."
@@ -505,7 +501,7 @@ export default function AddMealScreen() {
               />
               {searchQuery.length > 0 && (
                 <TouchableOpacity onPress={() => { setSearchQuery(''); setSearchResults([]); }}>
-                  <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+                  <Ionicons name="close-circle" size={20} color={Colors.light.textSecondary} />
                 </TouchableOpacity>
               )}
             </View>
@@ -550,7 +546,7 @@ export default function AddMealScreen() {
           {/* Search Results */}
           {searchQuery.length === 0 ? (
             <View style={styles.emptySearchState}>
-              <Ionicons name="search" size={48} color={colors.textSecondary} />
+              <Ionicons name="search" size={48} color={Colors.light.textSecondary} />
               <Text style={styles.emptySearchTitle}>Search for foods</Text>
               <Text style={styles.emptySearchText}>
                 Try searching for "apple", "chicken", "rice", etc.
@@ -558,7 +554,7 @@ export default function AddMealScreen() {
             </View>
           ) : searchResults.length === 0 ? (
             <View style={styles.emptySearchState}>
-              <Ionicons name="sad-outline" size={48} color={colors.textSecondary} />
+              <Ionicons name="sad-outline" size={48} color={Colors.light.textSecondary} />
               <Text style={styles.emptySearchTitle}>No foods found</Text>
               <Text style={styles.emptySearchText}>Try a different search term</Text>
             </View>
@@ -602,13 +598,13 @@ export default function AddMealScreen() {
   );
 }
 
-const useAddMealStyles = (colors: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: Colors.light.background,
   },
   header: {
-    backgroundColor: colors.primary,
+    backgroundColor: Colors.light.primary,
     padding: Spacing.lg,
     borderBottomLeftRadius: BorderRadius.xl,
     borderBottomRightRadius: BorderRadius.xl,
@@ -616,7 +612,7 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
   headerTitle: {
     ...Typography.fontSize.xxl,
     fontWeight: Typography.fontWeight.bold,
-    color: colors.background,
+    color: Colors.light.background,
     textAlign: 'center',
   },
   content: {
@@ -629,7 +625,7 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
   sectionTitle: {
     ...Typography.fontSize.md,
     fontWeight: Typography.fontWeight.semibold,
-    color: colors.text,
+    color: Colors.light.text,
     marginBottom: Spacing.sm,
   },
   mealTypes: {
@@ -640,7 +636,7 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
   mealTypeButton: {
     flex: 1,
     minWidth: '45%',
-    backgroundColor: colors.surface,
+    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     alignItems: 'center',
@@ -648,8 +644,8 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
     borderColor: 'transparent',
   },
   mealTypeButtonActive: {
-    borderColor: colors.primary,
-    backgroundColor: `${colors.primary}20`,
+    borderColor: Colors.light.primary,
+    backgroundColor: `${Colors.light.primary}20`,
   },
   mealTypeIcon: {
     ...Typography.fontSize.xl,
@@ -657,10 +653,10 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
   },
   mealTypeLabel: {
     ...Typography.fontSize.sm,
-    color: colors.text,
+    color: Colors.light.text,
   },
   mealTypeLabelActive: {
-    color: colors.primary,
+    color: Colors.light.primary,
     fontWeight: Typography.fontWeight.semibold,
   },
   photoButtons: {
@@ -669,14 +665,14 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
   },
   photoButton: {
     flex: 1,
-    backgroundColor: colors.surface,
+    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     alignItems: 'center',
   },
   photoButtonText: {
     ...Typography.fontSize.sm,
-    color: colors.text,
+    color: Colors.light.text,
     marginTop: Spacing.xs,
   },
   photoPreview: {
@@ -692,11 +688,11 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
     position: 'absolute',
     top: Spacing.sm,
     right: Spacing.sm,
-    backgroundColor: colors.background,
+    backgroundColor: Colors.light.background,
     borderRadius: 12,
   },
   searchFoodButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: Colors.light.primary,
     borderRadius: BorderRadius.lg,
     padding: Spacing.lg,
     flexDirection: 'row',
@@ -709,11 +705,11 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
   searchFoodTitle: {
     ...Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.bold,
-    color: colors.background,
+    color: Colors.light.background,
   },
   searchFoodSubtitle: {
     ...Typography.fontSize.sm,
-    color: colors.background,
+    color: Colors.light.background,
     opacity: 0.9,
   },
   manualEntryHeader: {
@@ -722,7 +718,7 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
   },
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
   },
@@ -732,18 +728,18 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
   label: {
     ...Typography.fontSize.sm,
     fontWeight: '500',
-    color: colors.text,
+    color: Colors.light.text,
     marginBottom: Spacing.xs,
   },
   input: {
-    backgroundColor: colors.background,
+    backgroundColor: Colors.light.background,
     borderRadius: BorderRadius.md,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     ...Typography.fontSize.md,
-    color: colors.text,
+    color: Colors.light.text,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: Colors.light.border,
   },
   textArea: {
     height: 80,
@@ -757,7 +753,7 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
     flex: 1,
   },
   addButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: Colors.light.primary,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     flexDirection: 'row',
@@ -769,12 +765,12 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
   addButtonText: {
     ...Typography.fontSize.md,
     fontWeight: '600',
-    color: colors.background,
+    color: Colors.light.background,
   },
   foodItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
@@ -782,15 +778,15 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
   foodName: {
     ...Typography.fontSize.md,
     fontWeight: '500',
-    color: colors.text,
+    color: Colors.light.text,
   },
   foodDetails: {
     ...Typography.fontSize.sm,
-    color: colors.textSecondary,
+    color: Colors.light.textSecondary,
     marginTop: Spacing.xs,
   },
   totalsCard: {
-    backgroundColor: colors.primary,
+    backgroundColor: Colors.light.primary,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     marginTop: Spacing.sm,
@@ -798,7 +794,7 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
   totalsTitle: {
     ...Typography.fontSize.md,
     fontWeight: '600',
-    color: colors.background,
+    color: Colors.light.background,
     marginBottom: Spacing.sm,
   },
   totalsRow: {
@@ -808,33 +804,33 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
   },
   totalLabel: {
     ...Typography.fontSize.sm,
-    color: colors.background,
+    color: Colors.light.background,
     opacity: 0.9,
   },
   totalValue: {
     ...Typography.fontSize.sm,
     fontWeight: 'bold',
-    color: colors.background,
+    color: Colors.light.background,
   },
   saveButton: {
-    backgroundColor: colors.success,
+    backgroundColor: Colors.light.success,
     borderRadius: BorderRadius.lg,
     padding: Spacing.lg,
     alignItems: 'center',
     marginBottom: Spacing.xl,
   },
   saveButtonDisabled: {
-    backgroundColor: colors.border,
+    backgroundColor: Colors.light.border,
   },
   saveButtonText: {
     ...Typography.fontSize.lg,
     fontWeight: 'bold',
-    color: colors.background,
+    color: Colors.light.background,
   },
   // Modal styles
   modalContainer: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: Colors.light.background,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -842,58 +838,58 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
     padding: Spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: Colors.light.border,
   },
   modalCancel: {
     ...Typography.fontSize.md,
-    color: colors.primary,
+    color: Colors.light.primary,
   },
   modalTitle: {
     ...Typography.fontSize.lg,
     fontWeight: 'bold',
-    color: colors.text,
+    color: Colors.light.text,
   },
   searchSection: {
     padding: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: Colors.light.border,
   },
   searchInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.md,
     paddingHorizontal: Spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: Colors.light.border,
   },
   searchInput: {
     flex: 1,
     padding: Spacing.md,
     ...Typography.fontSize.md,
-    color: colors.text,
+    color: Colors.light.text,
   },
   categoriesScroll: {
     padding: Spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: Colors.light.border,
   },
   categoryChip: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.md,
-    backgroundColor: colors.surface,
+    backgroundColor: Colors.light.surface,
     marginRight: Spacing.sm,
   },
   categoryChipActive: {
-    backgroundColor: colors.primary,
+    backgroundColor: Colors.light.primary,
   },
   categoryChipText: {
     ...Typography.fontSize.sm,
-    color: colors.text,
+    color: Colors.light.text,
   },
   categoryChipTextActive: {
-    color: colors.background,
+    color: Colors.light.background,
     fontWeight: '600',
   },
   emptySearchState: {
@@ -903,12 +899,12 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
   emptySearchTitle: {
     ...Typography.fontSize.lg,
     fontWeight: '600',
-    color: colors.text,
+    color: Colors.light.text,
     marginTop: Spacing.md,
   },
   emptySearchText: {
     ...Typography.fontSize.sm,
-    color: colors.textSecondary,
+    color: Colors.light.textSecondary,
     marginTop: Spacing.xs,
     textAlign: 'center',
   },
@@ -918,7 +914,7 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
   foodSearchResult: {
     padding: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: Colors.light.border,
   },
   foodSearchInfo: {
     marginBottom: Spacing.sm,
@@ -926,22 +922,22 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
   foodSearchName: {
     ...Typography.fontSize.md,
     fontWeight: '600',
-    color: colors.text,
+    color: Colors.light.text,
   },
   foodSearchCategory: {
     ...Typography.fontSize.sm,
-    color: colors.primary,
+    color: Colors.light.primary,
     marginTop: Spacing.xs,
   },
   foodSearchNutrition: {
     ...Typography.fontSize.sm,
-    color: colors.textSecondary,
+    color: Colors.light.textSecondary,
   },
   portionsScroll: {
     marginTop: Spacing.sm,
   },
   portionButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: Colors.light.primary,
     borderRadius: BorderRadius.md,
     padding: Spacing.sm,
     marginRight: Spacing.sm,
@@ -951,11 +947,11 @@ const useAddMealStyles = (colors: any) => StyleSheet.create({
   portionButtonName: {
     ...Typography.fontSize.sm,
     fontWeight: '600',
-    color: colors.background,
+    color: Colors.light.background,
   },
   portionButtonSize: {
     ...Typography.fontSize.xs,
-    color: colors.background,
+    color: Colors.light.background,
     opacity: 0.9,
   },
 });

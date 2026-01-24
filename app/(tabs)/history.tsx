@@ -9,8 +9,7 @@ import {
 import { useSelector } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 
-import { Spacing, BorderRadius, Typography } from '../../src/theme';
-import { useTheme } from '../../src/theme';
+import { Colors, Spacing, BorderRadius, Typography } from '../../src/theme';
 import { MealCard } from '../../src/components/MealCard';
 import { RootState } from '../../src/store';
 import { Meal } from '../../src/models';
@@ -18,7 +17,6 @@ import { formatDate, getLast7Days, getDayName, formatDisplayDate } from '../../s
 import { calculateDailyTotals } from '../../src/utils/calculator';
 
 export default function HistoryScreen() {
-  const { colors } = useTheme();
   const meals = useSelector((state: RootState) => state.meals.meals) || [];
   const activeGoal = useSelector((state: RootState) => state.goals.activeGoal);
   const [selectedDate, setSelectedDate] = useState<string>(formatDate(new Date()));
@@ -45,8 +43,6 @@ export default function HistoryScreen() {
       };
     });
   }, [meals]);
-
-  const styles = useHistoryStyles(colors);
 
   return (
     <View style={styles.container}>
@@ -111,19 +107,19 @@ export default function HistoryScreen() {
 
           <View style={styles.summaryCard}>
             <View style={styles.summaryItem}>
-              <Ionicons name="flame" size={20} color={colors.primary} />
+              <Ionicons name="flame" size={20} color={Colors.light.primary} />
               <Text style={styles.summaryValue}>{dailyTotals.totalCalories}</Text>
               <Text style={styles.summaryLabel}>calories</Text>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.summaryItem}>
-              <Ionicons name="cube" size={20} color={colors.secondary} />
+              <Ionicons name="cube" size={20} color={Colors.light.secondary} />
               <Text style={styles.summaryValue}>{dailyTotals.totalSugar.toFixed(1)}</Text>
               <Text style={styles.summaryLabel}>sugar (g)</Text>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.summaryItem}>
-              <Ionicons name="fitness" size={20} color={colors.accent} />
+              <Ionicons name="fitness" size={20} color={Colors.light.accent} />
               <Text style={styles.summaryValue}>{dailyTotals.totalProtein.toFixed(1)}</Text>
               <Text style={styles.summaryLabel}>protein (g)</Text>
             </View>
@@ -135,7 +131,7 @@ export default function HistoryScreen() {
           <Text style={styles.sectionTitle}>Meals</Text>
           {selectedDateMeals.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="calendar-outline" size={48} color={colors.textSecondary} />
+              <Ionicons name="calendar-outline" size={48} color={Colors.light.textSecondary} />
               <Text style={styles.emptyStateText}>No meals logged for this day</Text>
             </View>
           ) : (
@@ -186,13 +182,13 @@ export default function HistoryScreen() {
   );
 }
 
-const useHistoryStyles = (colors: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: Colors.light.background,
   },
   header: {
-    backgroundColor: colors.primary,
+    backgroundColor: Colors.light.primary,
     padding: Spacing.lg,
     borderBottomLeftRadius: BorderRadius.xl,
     borderBottomRightRadius: BorderRadius.xl,
@@ -200,7 +196,7 @@ const useHistoryStyles = (colors: any) => StyleSheet.create({
   headerTitle: {
     ...Typography.fontSize.xxl,
     fontWeight: Typography.fontWeight.bold,
-    color: colors.background,
+    color: Colors.light.background,
     textAlign: 'center',
   },
   content: {
@@ -213,7 +209,7 @@ const useHistoryStyles = (colors: any) => StyleSheet.create({
   sectionTitle: {
     ...Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.semibold,
-    color: colors.text,
+    color: Colors.light.text,
     marginBottom: Spacing.sm,
   },
   chartContainer: {
@@ -221,7 +217,7 @@ const useHistoryStyles = (colors: any) => StyleSheet.create({
     paddingHorizontal: Spacing.md,
   },
   dayCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     marginRight: Spacing.sm,
@@ -229,40 +225,40 @@ const useHistoryStyles = (colors: any) => StyleSheet.create({
     minWidth: 70,
   },
   dayCardActive: {
-    backgroundColor: colors.primary,
+    backgroundColor: Colors.light.primary,
   },
   dayName: {
     ...Typography.fontSize.sm,
-    color: colors.text,
+    color: Colors.light.text,
     marginBottom: Spacing.sm,
   },
   dayNameActive: {
-    color: colors.background,
+    color: Colors.light.background,
     fontWeight: Typography.fontWeight.semibold,
   },
   calorieBar: {
     width: 12,
-    backgroundColor: colors.primary,
+    backgroundColor: Colors.light.primary,
     borderRadius: 6,
     marginBottom: Spacing.xs,
   },
   calorieBarActive: {
-    backgroundColor: colors.background,
+    backgroundColor: Colors.light.background,
   },
   calorieText: {
     ...Typography.fontSize.sm,
     fontWeight: Typography.fontWeight.bold,
-    color: colors.text,
+    color: Colors.light.text,
   },
   calorieTextActive: {
-    color: colors.background,
+    color: Colors.light.background,
   },
   sugarText: {
     ...Typography.fontSize.xs,
-    color: colors.textSecondary,
+    color: Colors.light.textSecondary,
   },
   sugarTextActive: {
-    color: colors.background,
+    color: Colors.light.background,
     opacity: 0.9,
   },
   dateHeader: {
@@ -273,10 +269,10 @@ const useHistoryStyles = (colors: any) => StyleSheet.create({
   dateTitle: {
     ...Typography.fontSize.xl,
     fontWeight: Typography.fontWeight.bold,
-    color: colors.text,
+    color: Colors.light.text,
   },
   todayBadge: {
-    backgroundColor: colors.success,
+    backgroundColor: Colors.light.success,
     borderRadius: BorderRadius.sm,
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
@@ -285,11 +281,11 @@ const useHistoryStyles = (colors: any) => StyleSheet.create({
   todayText: {
     ...Typography.fontSize.xs,
     fontWeight: Typography.fontWeight.semibold,
-    color: colors.background,
+    color: Colors.light.background,
   },
   summaryCard: {
     flexDirection: 'row',
-    backgroundColor: colors.surface,
+    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     alignItems: 'center',
@@ -301,17 +297,17 @@ const useHistoryStyles = (colors: any) => StyleSheet.create({
   summaryValue: {
     ...Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.bold,
-    color: colors.text,
+    color: Colors.light.text,
     marginTop: Spacing.xs,
   },
   summaryLabel: {
     ...Typography.fontSize.xs,
-    color: colors.textSecondary,
+    color: Colors.light.textSecondary,
   },
   summaryDivider: {
     width: 1,
     height: 40,
-    backgroundColor: colors.border,
+    backgroundColor: Colors.light.border,
   },
   emptyState: {
     alignItems: 'center',
@@ -319,11 +315,11 @@ const useHistoryStyles = (colors: any) => StyleSheet.create({
   },
   emptyStateText: {
     ...Typography.fontSize.md,
-    color: colors.textSecondary,
+    color: Colors.light.textSecondary,
     marginTop: Spacing.md,
   },
   breakdownCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
   },
@@ -332,15 +328,15 @@ const useHistoryStyles = (colors: any) => StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: Spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: Colors.light.border,
   },
   breakdownLabel: {
     ...Typography.fontSize.md,
-    color: colors.text,
+    color: Colors.light.text,
   },
   breakdownValue: {
     ...Typography.fontSize.md,
     fontWeight: Typography.fontWeight.semibold,
-    color: colors.primary,
+    color: Colors.light.primary,
   },
 });

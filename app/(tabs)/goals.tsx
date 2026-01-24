@@ -10,8 +10,7 @@ import {
 import { useSelector, useDispatch } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 
-import { Spacing, BorderRadius, Typography } from '../../src/theme';
-import { useTheme } from '../../src/theme';
+import { Colors, Spacing, BorderRadius, Typography } from '../../src/theme';
 import { Goal } from '../../src/models';
 import { RootState, AppDispatch } from '../../src/store';
 import { updateGoal, setDefaultGoal } from '../../src/store';
@@ -19,7 +18,6 @@ import { DEFAULT_GOALS } from '../../src/utils/constants';
 import { Alert } from '../../src/utils/alert';
 
 export default function GoalsScreen() {
-  const { colors } = useTheme();
   const dispatch = useDispatch<AppDispatch>();
   const activeGoal = useSelector((state: RootState) => state.goals.activeGoal);
   const goals = useSelector((state: RootState) => state.goals.goals);
@@ -124,15 +122,13 @@ export default function GoalsScreen() {
     setHasChanges(JSON.stringify(current) !== JSON.stringify(original));
   }, [calorieTarget, sugarTarget, proteinTarget, carbTarget, fatTarget, warningsEnabled, activeGoal]);
 
-  const styles = useGoalsStyles(colors);
-
   const GoalInput = ({
     label,
     value,
     onValueChange,
     unit,
     icon,
-    color = colors.primary,
+    color = Colors.light.primary,
   }: any) => (
     <View style={styles.goalCard}>
       <View style={styles.goalHeader}>
@@ -161,7 +157,7 @@ export default function GoalsScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Info Card */}
         <View style={styles.infoCard}>
-          <Ionicons name="information-circle" size={24} color={colors.info} />
+          <Ionicons name="information-circle" size={24} color={Colors.light.info} />
           <Text style={styles.infoText}>
             Set your daily nutritional targets. The app will track your progress and alert you
             when approaching your limits.
@@ -175,13 +171,13 @@ export default function GoalsScreen() {
           onValueChange={setCalorieTarget}
           unit="cal"
           icon="flame"
-          color={colors.primary}
+          color={Colors.light.primary}
         />
 
         {/* Sugar Goal - Primary Focus */}
         <View style={styles.sugarFocusCard}>
           <View style={styles.sugarFocusHeader}>
-            <Ionicons name="cube" size={28} color={colors.secondary} />
+            <Ionicons name="cube" size={28} color={Colors.light.secondary} />
             <View style={styles.sugarFocusText}>
               <Text style={styles.sugarFocusTitle}>Daily Sugar Limit</Text>
               <Text style={styles.sugarFocusSubtitle}>Primary tracking metric</Text>
@@ -213,7 +209,7 @@ export default function GoalsScreen() {
           onValueChange={setProteinTarget}
           unit="g"
           icon="fitness"
-          color={colors.accent}
+          color={Colors.light.accent}
         />
 
         <GoalInput
@@ -222,7 +218,7 @@ export default function GoalsScreen() {
           onValueChange={setCarbTarget}
           unit="g"
           icon="leaf"
-          color={colors.success}
+          color={Colors.light.success}
         />
 
         <GoalInput
@@ -231,13 +227,13 @@ export default function GoalsScreen() {
           onValueChange={setFatTarget}
           unit="g"
           icon="water"
-          color={colors.warning}
+          color={Colors.light.warning}
         />
 
         {/* Warnings Toggle */}
         <View style={styles.toggleCard}>
           <View style={styles.toggleHeader}>
-            <Ionicons name="notifications" size={24} color={colors.text} />
+            <Ionicons name="notifications" size={24} color={Colors.light.text} />
             <View style={styles.toggleText}>
               <Text style={styles.toggleTitle}>Sugar Alerts</Text>
               <Text style={styles.toggleSubtitle}>
@@ -255,7 +251,7 @@ export default function GoalsScreen() {
             <Ionicons
               name={warningsEnabled ? 'checkmark' : 'close'}
               size={20}
-              color={colors.background}
+              color={Colors.light.background}
             />
           </TouchableOpacity>
         </View>
@@ -263,7 +259,7 @@ export default function GoalsScreen() {
         {/* Action Buttons */}
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.secondaryButton} onPress={setDefaults}>
-            <Ionicons name="refresh" size={20} color={colors.primary} />
+            <Ionicons name="refresh" size={20} color={Colors.light.primary} />
             <Text style={styles.secondaryButtonText}>Reset to Defaults</Text>
           </TouchableOpacity>
 
@@ -280,13 +276,13 @@ export default function GoalsScreen() {
   );
 }
 
-const useGoalsStyles = (colors: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: Colors.light.background,
   },
   header: {
-    backgroundColor: colors.primary,
+    backgroundColor: Colors.light.primary,
     padding: Spacing.lg,
     borderBottomLeftRadius: BorderRadius.xl,
     borderBottomRightRadius: BorderRadius.xl,
@@ -294,7 +290,7 @@ const useGoalsStyles = (colors: any) => StyleSheet.create({
   headerTitle: {
     ...Typography.fontSize.xxl,
     fontWeight: Typography.fontWeight.bold,
-    color: colors.background,
+    color: Colors.light.background,
     textAlign: 'center',
   },
   content: {
@@ -303,21 +299,21 @@ const useGoalsStyles = (colors: any) => StyleSheet.create({
   },
   infoCard: {
     flexDirection: 'row',
-    backgroundColor: `${colors.info}20`,
+    backgroundColor: `${Colors.light.info}20`,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: colors.info,
+    borderColor: Colors.light.info,
   },
   infoText: {
     ...Typography.fontSize.sm,
-    color: colors.text,
+    color: Colors.light.text,
     flex: 1,
     marginLeft: Spacing.sm,
   },
   goalCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
@@ -330,7 +326,7 @@ const useGoalsStyles = (colors: any) => StyleSheet.create({
   goalLabel: {
     ...Typography.fontSize.md,
     fontWeight: Typography.fontWeight.semibold,
-    color: colors.text,
+    color: Colors.light.text,
     marginLeft: Spacing.sm,
   },
   inputRow: {
@@ -339,28 +335,28 @@ const useGoalsStyles = (colors: any) => StyleSheet.create({
   },
   goalInput: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: Colors.light.background,
     borderRadius: BorderRadius.md,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     ...Typography.fontSize.xl,
     fontWeight: Typography.fontWeight.bold,
-    color: colors.text,
+    color: Colors.light.text,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: Colors.light.border,
   },
   goalUnit: {
     ...Typography.fontSize.md,
-    color: colors.textSecondary,
+    color: Colors.light.textSecondary,
     marginLeft: Spacing.sm,
   },
   sugarFocusCard: {
-    backgroundColor: `${colors.secondary}20`,
+    backgroundColor: `${Colors.light.secondary}20`,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     marginBottom: Spacing.md,
     borderWidth: 2,
-    borderColor: colors.secondary,
+    borderColor: Colors.light.secondary,
   },
   sugarFocusHeader: {
     flexDirection: 'row',
@@ -374,41 +370,41 @@ const useGoalsStyles = (colors: any) => StyleSheet.create({
   sugarFocusTitle: {
     ...Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.bold,
-    color: colors.text,
+    color: Colors.light.text,
   },
   sugarFocusSubtitle: {
     ...Typography.fontSize.sm,
-    color: colors.textSecondary,
+    color: Colors.light.textSecondary,
   },
   sugarInput: {
-    borderColor: colors.secondary,
+    borderColor: Colors.light.secondary,
   },
   sugarUnit: {
     ...Typography.fontSize.md,
     fontWeight: Typography.fontWeight.semibold,
-    color: colors.secondary,
+    color: Colors.light.secondary,
   },
   sugarInfo: {
     marginTop: Spacing.sm,
     paddingTop: Spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: `${colors.secondary}40`,
+    borderTopColor: `${Colors.light.secondary}40`,
   },
   sugarInfoText: {
     ...Typography.fontSize.sm,
-    color: colors.textSecondary,
+    color: Colors.light.textSecondary,
     fontStyle: 'italic',
   },
   sectionTitle: {
     ...Typography.fontSize.md,
     fontWeight: Typography.fontWeight.semibold,
-    color: colors.text,
+    color: Colors.light.text,
     marginTop: Spacing.md,
     marginBottom: Spacing.sm,
   },
   toggleCard: {
     flexDirection: 'row',
-    backgroundColor: colors.surface,
+    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     alignItems: 'center',
@@ -427,22 +423,22 @@ const useGoalsStyles = (colors: any) => StyleSheet.create({
   toggleTitle: {
     ...Typography.fontSize.md,
     fontWeight: Typography.fontWeight.semibold,
-    color: colors.text,
+    color: Colors.light.text,
   },
   toggleSubtitle: {
     ...Typography.fontSize.sm,
-    color: colors.textSecondary,
+    color: Colors.light.textSecondary,
   },
   toggleButton: {
     width: 48,
     height: 28,
     borderRadius: 14,
-    backgroundColor: colors.border,
+    backgroundColor: Colors.light.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
   toggleButtonActive: {
-    backgroundColor: colors.success,
+    backgroundColor: Colors.light.success,
   },
   buttonRow: {
     flexDirection: 'row',
@@ -453,33 +449,33 @@ const useGoalsStyles = (colors: any) => StyleSheet.create({
   secondaryButton: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: colors.surface,
+    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.xs,
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: Colors.light.primary,
   },
   secondaryButtonText: {
     ...Typography.fontSize.md,
     fontWeight: Typography.fontWeight.semibold,
-    color: colors.primary,
+    color: Colors.light.primary,
   },
   primaryButton: {
     flex: 1,
-    backgroundColor: colors.primary,
+    backgroundColor: Colors.light.primary,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     alignItems: 'center',
   },
   primaryButtonDisabled: {
-    backgroundColor: colors.border,
+    backgroundColor: Colors.light.border,
   },
   primaryButtonText: {
     ...Typography.fontSize.md,
     fontWeight: Typography.fontWeight.bold,
-    color: colors.background,
+    color: Colors.light.background,
   },
 });
