@@ -6,10 +6,10 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  Alert,
   Image,
   Modal,
   FlatList,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useDispatch } from 'react-redux';
@@ -30,6 +30,7 @@ import {
   FoodDatabaseItem,
   searchFoodDatabase,
 } from '../../src/utils/foodDatabase';
+import { Alert } from '../../src/utils/alert';
 
 export default function AddMealScreen() {
   const router = useRouter();

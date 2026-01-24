@@ -5,12 +5,12 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Colors, Spacing, BorderRadius, Typography } from '../../src/theme';
+import { Alert } from '../../src/utils/alert';
 
 const MEALS_STORAGE_KEY = '@calory_tracker_meals';
 const GOALS_STORAGE_KEY = '@calory_tracker_goals';

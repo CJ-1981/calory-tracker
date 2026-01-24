@@ -6,7 +6,6 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +15,7 @@ import { Goal } from '../../src/models';
 import { RootState, AppDispatch } from '../../src/store';
 import { updateGoal, setDefaultGoal } from '../../src/store';
 import { DEFAULT_GOALS } from '../../src/utils/constants';
+import { Alert } from '../../src/utils/alert';
 
 export default function GoalsScreen() {
   const dispatch = useDispatch<AppDispatch>();
