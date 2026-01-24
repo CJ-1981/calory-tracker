@@ -11,7 +11,8 @@ import { useRouter } from 'expo-router';
 import { useSelector, useDispatch } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 
-import { Colors, Spacing, BorderRadius, Typography } from '../../src/theme';
+import { Spacing, BorderRadius, Typography } from '../../src/theme';
+import { useTheme } from '../../src/theme';
 import { ProgressBar } from '../../src/components/ProgressBar';
 import { SugarAlert } from '../../src/components/SugarAlert';
 import { MealCard } from '../../src/components/MealCard';
@@ -22,6 +23,7 @@ import { checkGoalProgress, checkSugarWarnings, calculateDailySummary } from '..
 import { Meal, DailyLog } from '../../src/models';
 
 export default function DashboardScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const todayMeals = useSelector((state: RootState) => selectTodayMeals(state)) || [];
@@ -59,15 +61,17 @@ export default function DashboardScreen() {
   const getProgressColor = (status: string) => {
     switch (status) {
       case 'exceeded':
-        return Colors.light.danger;
+        return colors.danger;
       case 'warning':
-        return Colors.light.warning;
+        return colors.warning;
       case 'approaching':
         return '#FFA07A';
       default:
-        return Colors.light.success;
+        return colors.success;
     }
   };
+
+  const styles = useDashboardStyles(colors);
 
   return (
     <View style={styles.container}>
@@ -95,7 +99,7 @@ export default function DashboardScreen() {
         {/* Calories Card */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <Ionicons name="flame" size={24} color={Colors.light.primary} />
+            <Ionicons name="flame" size={24} color={colors.primary} />
             <Text style={styles.cardTitle}>Calories</Text>
           </View>
           {calorieProgress ? (
@@ -118,7 +122,7 @@ export default function DashboardScreen() {
         {/* Sugar Card */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <Ionicons name="cube" size={24} color={Colors.light.secondary} />
+            <Ionicons name="cube" size={24} color={colors.secondary} />
             <Text style={styles.cardTitle}>Sugar</Text>
           </View>
           {sugarProgress ? (
@@ -169,7 +173,7 @@ export default function DashboardScreen() {
           </View>
           {todayMeals.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="restaurant-outline" size={48} color={Colors.light.textSecondary} />
+              <Ionicons name="restaurant-outline" size={48} color={colors.textSecondary} />
               <Text style={styles.emptyStateText}>No meals logged today</Text>
               <Text style={styles.emptyStateSubtext}>Tap the button below to add your first meal</Text>
             </View>
@@ -190,19 +194,19 @@ export default function DashboardScreen() {
         style={styles.fab}
         onPress={() => router.push('/(tabs)/add-meal')}
       >
-        <Ionicons name="add" size={28} color={Colors.light.background} />
+        <Ionicons name="add" size={28} color={colors.background} />
       </TouchableOpacity>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useDashboardStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
+    backgroundColor: colors.background,
   },
   header: {
-    backgroundColor: Colors.light.primary,
+    backgroundColor: colors.primary,
     padding: Spacing.lg,
     paddingBottom: Spacing.xl,
     borderBottomLeftRadius: BorderRadius.xl,
@@ -211,11 +215,11 @@ const styles = StyleSheet.create({
   headerTitle: {
     ...Typography.fontSize.xxl,
     fontWeight: Typography.fontWeight.bold,
-    color: Colors.light.background,
+    color: colors.background,
   },
   headerDate: {
     ...Typography.fontSize.md,
-    color: Colors.light.background,
+    color: colors.background,
     opacity: 0.9,
     marginTop: Spacing.xs,
   },
@@ -227,11 +231,11 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   card: {
-    backgroundColor: Colors.light.background,
+    backgroundColor: colors.background,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     marginBottom: Spacing.md,
-    shadowColor: Colors.light.text,
+    shadowColor: colors.text,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -245,7 +249,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     ...Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.semibold,
-    color: Colors.light.text,
+    color: colors.text,
     marginLeft: Spacing.sm,
   },
   progressContainer: {
@@ -256,15 +260,15 @@ const styles = StyleSheet.create({
   progressValue: {
     ...Typography.fontSize.xxl,
     fontWeight: Typography.fontWeight.bold,
-    color: Colors.light.text,
+    color: colors.text,
   },
   progressTarget: {
     ...Typography.fontSize.md,
-    color: Colors.light.textSecondary,
+    color: colors.textSecondary,
   },
   noDataText: {
     ...Typography.fontSize.md,
-    color: Colors.light.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     padding: Spacing.md,
   },
@@ -279,11 +283,11 @@ const styles = StyleSheet.create({
   macroValue: {
     ...Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.bold,
-    color: Colors.light.primary,
+    color: colors.primary,
   },
   macroLabel: {
     ...Typography.fontSize.sm,
-    color: Colors.light.textSecondary,
+    color: colors.textSecondary,
   },
   section: {
     marginBottom: Spacing.xl,
@@ -297,11 +301,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     ...Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.semibold,
-    color: Colors.light.text,
+    color: colors.text,
   },
   seeAllText: {
     ...Typography.fontSize.sm,
-    color: Colors.light.primary,
+    color: colors.primary,
   },
   emptyState: {
     alignItems: 'center',
@@ -310,12 +314,12 @@ const styles = StyleSheet.create({
   emptyStateText: {
     ...Typography.fontSize.md,
     fontWeight: Typography.fontWeight.medium,
-    color: Colors.light.text,
+    color: colors.text,
     marginTop: Spacing.md,
   },
   emptyStateSubtext: {
     ...Typography.fontSize.sm,
-    color: Colors.light.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     marginTop: Spacing.xs,
   },
@@ -326,10 +330,10 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.light.primary,
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: Colors.light.text,
+    shadowColor: colors.text,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,

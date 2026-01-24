@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { Provider } from 'react-redux';
 import { useEffect } from 'react';
+import { useTheme, ThemeProvider as CustomThemeProvider } from '../src/theme';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { store } from '../src/store';
@@ -19,23 +20,44 @@ function DataInitializer() {
   return null;
 }
 
+// Navigation theme sync wrapper
+function NavigationWrapper() {
+  const { colors, isDark } = useTheme();
+
+  const navigationTheme = {
+    dark: isDark,
+    colors: {
+      primary: colors.primary,
+      background: colors.background,
+      card: colors.surface,
+      text: colors.text,
+      border: colors.border,
+      notification: colors.primary,
+    },
+  };
+
+  return (
+    <ThemeProvider value={navigationTheme}>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+      </Stack>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+    </ThemeProvider>
+  );
+}
+
 export const unstable_settings = {
   anchor: '(tabs)',
 };
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Provider store={store}>
-      <DataInitializer />
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
+      <CustomThemeProvider>
+        <DataInitializer />
+        <NavigationWrapper />
+      </CustomThemeProvider>
     </Provider>
   );
 }
