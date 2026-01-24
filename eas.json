@@ -1,0 +1,48 @@
+{
+  "cli": {
+    "version": ">= 7.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": "expo-dev-client",
+      "distribution": "internal",
+      "android": {
+        "buildProfile": "development-profile"
+      },
+      "ios": {
+        "simulator": false
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildProfile": "preview-profile"
+      },
+      "ios": {
+        "simulator": false
+      }
+    },
+    "production": {
+      "android": {
+        "buildProfile": "production-profile"
+      },
+      "ios": {
+        "autoIncrement": true
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "serviceAccountPrivateKey": ""
+      },
+      "ios": {
+        "appleId": "your-apple-id@email.com",
+        "ascAppIdentifier": "ABCD123456",
+        "appleTeamId": "ABCD123456",
+        "appleId": "your-apple-id@icloud.com"
+      }
+    }
+  }
+}

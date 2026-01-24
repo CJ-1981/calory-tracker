@@ -1,0 +1,25 @@
+{
+  "cli": {
+    "version": ">= 7.0.0"
+  },
+  "build": {
+    "development-profile": {
+      "name": "Development Build",
+      "distribution": "internal",
+      "ios": {
+        "simulator": false
+      }
+    },
+    "preview-profile": {
+      "name": "Preview Build",
+      "distribution": "internal",
+      "ios": {
+        "simulator": false
+      }
+    },
+    "production-profile": {
+      "name": "Production Build",
+      "distribution": "store"
+    }
+  }
+}
