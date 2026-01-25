@@ -292,7 +292,7 @@ export default function AddMealScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.primary }]}>
-        <Text style={[styles.headerTitle, { color: colors.background }]}>Log Meal</Text>
+        <Text style={[styles.headerTitle, { color: colors.background, fontSize: scaledFontSize(Typography.fontSize.xxl, fontScale) }]}>Log Meal</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>

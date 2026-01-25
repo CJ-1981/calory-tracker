@@ -95,8 +95,8 @@ export default function DashboardScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.primary }]}>
-        <Text style={[styles.headerTitle, { color: colors.background }]}>Today's Summary</Text>
-        <Text style={[styles.headerDate, { color: colors.background }]}>
+        <Text style={[styles.headerTitle, { color: colors.background, fontSize: scaledFontSize(Typography.fontSize.xxl, fontScale) }]}>Today's Summary</Text>
+        <Text style={[styles.headerDate, { color: colors.background, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>
           {new Date().toLocaleDateString('en-US', {
             weekday: 'long',
             month: 'short',

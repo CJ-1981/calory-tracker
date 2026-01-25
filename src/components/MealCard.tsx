@@ -36,6 +36,22 @@ export const MealCard: React.FC<MealCardProps> = ({ meal, onPress, onDelete }) =
           </TouchableOpacity>
         )}
 
+        {/* Food Items List */}
+        {meal.foods && meal.foods.length > 0 && (
+          <View style={styles.foodsList}>
+            {meal.foods.map((food, index) => (
+              <View key={index} style={styles.foodItem}>
+                <Text style={[styles.foodName, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+                  {food.quantity}{food.servingUnit} {food.name}
+                </Text>
+                <Text style={[styles.foodCalories, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>
+                  {food.calories} cal
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+
         <View style={styles.nutrition}>
           <View style={styles.nutritionItem}>
             <Text style={[styles.nutritionValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{meal.totalCalories}</Text>
@@ -137,6 +153,23 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: BorderRadius.md,
     marginBottom: Spacing.sm,
+  },
+  foodsList: {
+    marginBottom: Spacing.sm,
+  },
+  foodItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: Spacing.xs,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+  },
+  foodName: {
+    flex: 1,
+  },
+  foodCalories: {
+    marginLeft: Spacing.sm,
   },
   nutrition: {
     flexDirection: 'row',

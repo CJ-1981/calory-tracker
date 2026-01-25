@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -132,25 +132,72 @@ export default function GoalsScreen() {
     unit,
     icon,
     color = colors.primary,
-  }: any) => (
-    <View style={[styles.goalCard, { backgroundColor: colors.surface }]}>
-      <View style={styles.goalHeader}>
-        <Ionicons name={icon} size={24} color={color} />
-        <Text style={[styles.goalLabel, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{label}</Text>
+    quickButtons = false,
+    step = 10,
+  }: any) => {
+    const incrementValue = (amount: number) => {
+      const currentValue = parseFloat(value) || 0;
+      const newValue = Math.max(0, currentValue + amount);
+      onValueChange(newValue.toString());
+    };
+
+    return (
+      <View style={[styles.goalCard, { backgroundColor: colors.surface }]}>
+        <View style={styles.goalHeader}>
+          <Ionicons name={icon} size={24} color={color} />
+          <Text style={[styles.goalLabel, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{label}</Text>
+        </View>
+        <View style={styles.inputRow}>
+          <TextInput
+            key={`${label}-input`}
+            style={[styles.goalInput, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.xxl, fontScale) }]}
+            defaultValue={value}
+            onEndEditing={(e) => onValueChange(e.nativeEvent.text)}
+            keyboardType="numeric"
+            placeholder="0"
+            placeholderTextColor={colors.textSecondary}
+          />
+          <Text style={[styles.goalUnit, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{unit}</Text>
+        </View>
+        {quickButtons && (
+          <View style={styles.quickButtonsRow}>
+            <TouchableOpacity
+              style={[styles.quickButton, { backgroundColor: colors.border }]}
+              onPress={() => incrementValue(-step)}
+            >
+              <Text style={[styles.quickButtonText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+                -{step}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.quickButton, { backgroundColor: colors.border }]}
+              onPress={() => incrementValue(-step * 2)}
+            >
+              <Text style={[styles.quickButtonText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+                -{step * 2}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.quickButton, { backgroundColor: colors.border }]}
+              onPress={() => incrementValue(step)}
+            >
+              <Text style={[styles.quickButtonText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+                +{step}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.quickButton, { backgroundColor: colors.border }]}
+              onPress={() => incrementValue(step * 2)}
+            >
+              <Text style={[styles.quickButtonText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+                +{step * 2}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
-      <View style={styles.inputRow}>
-        <TextInput
-          style={[styles.goalInput, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.xxl, fontScale) }]}
-          value={value}
-          onChangeText={onValueChange}
-          keyboardType="numeric"
-          placeholder="0"
-          placeholderTextColor={colors.textSecondary}
-        />
-        <Text style={[styles.goalUnit, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{unit}</Text>
-      </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -176,6 +223,8 @@ export default function GoalsScreen() {
           unit="cal"
           icon="flame"
           color={colors.primary}
+          quickButtons={true}
+          step={100}
         />
 
         {/* Sugar Goal - Primary Focus */}
@@ -189,14 +238,55 @@ export default function GoalsScreen() {
           </View>
           <View style={styles.inputRow}>
             <TextInput
+              key="sugar-input"
               style={[styles.goalInput, styles.sugarInput, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.xxl, fontScale) }]}
-              value={sugarTarget}
-              onChangeText={setSugarTarget}
+              defaultValue={sugarTarget}
+              onEndEditing={(e) => setSugarTarget(e.nativeEvent.text)}
               keyboardType="decimal-pad"
               placeholder="50"
               placeholderTextColor={colors.textSecondary}
             />
             <Text style={[styles.goalUnit, styles.sugarUnit, { color: colors.secondary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>grams</Text>
+          </View>
+          <View style={styles.quickButtonsRow}>
+            <TouchableOpacity
+              style={[styles.quickButton, { backgroundColor: colors.border }]}
+              onPress={() => {
+                const currentValue = parseFloat(sugarTarget) || 0;
+                const newValue = Math.max(0, currentValue - 5);
+                setSugarTarget(newValue.toString());
+              }}
+            >
+              <Text style={[styles.quickButtonText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>-5</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.quickButton, { backgroundColor: colors.border }]}
+              onPress={() => {
+                const currentValue = parseFloat(sugarTarget) || 0;
+                const newValue = Math.max(0, currentValue - 10);
+                setSugarTarget(newValue.toString());
+              }}
+            >
+              <Text style={[styles.quickButtonText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>-10</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.quickButton, { backgroundColor: colors.border }]}
+              onPress={() => {
+                const currentValue = parseFloat(sugarTarget) || 0;
+                setSugarTarget((currentValue + 5).toString());
+              }}
+            >
+              <Text style={[styles.quickButtonText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>+5</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.quickButton, { backgroundColor: colors.border }]}
+              onPress={() => {
+                const currentValue = parseFloat(sugarTarget) || 0;
+                setSugarTarget((currentValue + 10).toString());
+              }}
+            >
+              <Text style={[styles.quickButtonText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>+10</Text>
+            </TouchableOpacity>
           </View>
           <View style={styles.sugarInfo}>
             <Text style={[styles.sugarInfoText, { fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
@@ -215,6 +305,8 @@ export default function GoalsScreen() {
           unit="g"
           icon="fitness"
           color={colors.accent}
+          quickButtons={true}
+          step={10}
         />
 
         <GoalInput
@@ -224,6 +316,8 @@ export default function GoalsScreen() {
           unit="g"
           icon="leaf"
           color={colors.success}
+          quickButtons={true}
+          step={50}
         />
 
         <GoalInput
@@ -233,6 +327,8 @@ export default function GoalsScreen() {
           unit="g"
           icon="water"
           color={colors.warning}
+          quickButtons={true}
+          step={10}
         />
 
         {/* Warnings Toggle */}
@@ -350,6 +446,23 @@ const styles = StyleSheet.create({
   goalUnit: {
     color: "#666666",
     marginLeft: Spacing.sm,
+  },
+  quickButtonsRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
+  },
+  quickButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.xs,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: BorderRadius.md,
+  },
+  quickButtonText: {
+    fontWeight: Typography.fontWeight.semibold,
   },
   sugarFocusCard: {
     borderRadius: BorderRadius.lg,
