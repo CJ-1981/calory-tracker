@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Colors, Spacing, BorderRadius, Typography } from '../theme';
+import { Spacing, BorderRadius, Typography } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
 import { SugarWarning } from '../models';
+import { scaledFontSize } from '../utils/fontUtils';
 
 interface SugarAlertProps {
   warning: SugarWarning;
@@ -9,16 +11,18 @@ interface SugarAlertProps {
 }
 
 export const SugarAlert: React.FC<SugarAlertProps> = ({ warning, onDismiss }) => {
+  const { colors, fontScale } = useTheme();
+
   const getAlertColor = () => {
     switch (warning.severity) {
       case 'danger':
-        return Colors.light.danger;
+        return colors.danger;
       case 'warning':
-        return Colors.light.warning;
+        return colors.warning;
       case 'info':
-        return Colors.light.info;
+        return colors.info;
       default:
-        return Colors.light.success;
+        return colors.success;
     }
   };
 
@@ -36,16 +40,16 @@ export const SugarAlert: React.FC<SugarAlertProps> = ({ warning, onDismiss }) =>
   };
 
   return (
-    <View style={[styles.container, { borderLeftColor: getAlertColor() }]}>
+    <View style={[styles.container, { backgroundColor: colors.surface, borderLeftColor: getAlertColor() }]}>
       <View style={styles.content}>
-        <Text style={styles.icon}>{getIcon()}</Text>
+        <Text style={[styles.icon, { fontSize: scaledFontSize(Typography.fontSize.xl, fontScale) }]}>{getIcon()}</Text>
         <View style={styles.textContainer}>
-          <Text style={styles.message}>{warning.message}</Text>
+          <Text style={[styles.message, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>{warning.message}</Text>
         </View>
       </View>
       {onDismiss && (
         <TouchableOpacity onPress={onDismiss} style={styles.dismissButton}>
-          <Text style={styles.dismissText}>✕</Text>
+          <Text style={[styles.dismissText, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>✕</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -54,7 +58,6 @@ export const SugarAlert: React.FC<SugarAlertProps> = ({ warning, onDismiss }) =>
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.light.surface,
     borderLeftWidth: 4,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
@@ -69,23 +72,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   icon: {
-    fontSize: Typography.fontSize.xl,
     marginRight: Spacing.sm,
   },
   textContainer: {
     flex: 1,
   },
   message: {
-    ...Typography.fontSize.sm,
-    color: Colors.light.text,
     fontWeight: Typography.fontWeight.medium,
   },
   dismissButton: {
     padding: Spacing.xs,
     marginLeft: Spacing.sm,
   },
-  dismissText: {
-    ...Typography.fontSize.lg,
-    color: Colors.light.textSecondary,
-  },
+  dismissText: {},
 });

@@ -9,20 +9,20 @@ import {
 import { useSelector } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 
-import { Colors, Spacing, BorderRadius, Typography } from '../../src/theme';
+import { Spacing, BorderRadius, Typography } from '../../src/theme';
+import { useTheme } from '../../src/contexts/ThemeContext';
 import { MealCard } from '../../src/components/MealCard';
 import { RootState } from '../../src/store';
 import { Meal } from '../../src/models';
 import { formatDate, getLast7Days, getDayName, formatDisplayDate } from '../../src/utils/dateUtils';
 import { calculateDailyTotals } from '../../src/utils/calculator';
+import { scaledFontSize } from '../../src/utils/fontUtils';
 
 export default function HistoryScreen() {
+  const { colors, fontScale } = useTheme();
   const meals = useSelector((state: RootState) => state.meals.meals) || [];
   const activeGoal = useSelector((state: RootState) => state.goals.activeGoal);
   const [selectedDate, setSelectedDate] = useState<string>(formatDate(new Date()));
-
-  console.log('History Screen - meals from Redux:', meals);
-  console.log('History Screen - selected date:', selectedDate);
 
   const last7Days = getLast7Days();
 
@@ -45,15 +45,15 @@ export default function HistoryScreen() {
   }, [meals]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>History</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.primary }]}>
+        <Text style={[styles.headerTitle, { color: colors.background }]}>History</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Weekly Overview */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Last 7 Days</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Last 7 Days</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chartContainer}>
             {weeklyData.map((day) => {
               const isSelected = day.date === selectedDate;
@@ -66,24 +66,25 @@ export default function HistoryScreen() {
                   key={day.date}
                   style={[
                     styles.dayCard,
-                    isSelected && styles.dayCardActive,
+                    { backgroundColor: isSelected ? colors.primary : colors.surface },
+                    isSelected && { borderColor: colors.primary },
                   ]}
                   onPress={() => setSelectedDate(day.date)}
                 >
-                  <Text style={[styles.dayName, isSelected && styles.dayNameActive]}>
+                  <Text style={[styles.dayName, { color: isSelected ? colors.background : colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
                     {day.dayName}
                   </Text>
                   <View
                     style={[
                       styles.calorieBar,
-                      isSelected && styles.calorieBarActive,
+                      { backgroundColor: isSelected ? colors.background : colors.textSecondary },
                       { height: Math.max(4, caloriePercent * 0.8) },
                     ]}
                   />
-                  <Text style={[styles.calorieText, isSelected && styles.calorieTextActive]}>
+                  <Text style={[styles.calorieText, { color: isSelected ? colors.background : colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
                     {day.calories}
                   </Text>
-                  <Text style={[styles.sugarText, isSelected && styles.sugarTextActive]}>
+                  <Text style={[styles.sugarText, { color: isSelected ? colors.background : colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>
                     {day.sugar.toFixed(1)}g sugar
                   </Text>
                 </TouchableOpacity>
@@ -94,45 +95,45 @@ export default function HistoryScreen() {
 
         {/* Selected Date Summary */}
         <View style={styles.section}>
-          <View style={styles.dateHeader}>
-            <Text style={styles.dateTitle}>
+          <View style={[styles.dateHeader, { borderBottomColor: colors.border }]}>
+            <Text style={[styles.dateTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.xl, fontScale) }]}>
               {weeklyData.find((d) => d.date === selectedDate)?.displayDate}
             </Text>
             {selectedDate === formatDate(new Date()) && (
-              <View style={styles.todayBadge}>
-                <Text style={styles.todayText}>Today</Text>
+              <View style={[styles.todayBadge, { backgroundColor: colors.secondary }]}>
+                <Text style={[styles.todayText, { fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>Today</Text>
               </View>
             )}
           </View>
 
-          <View style={styles.summaryCard}>
+          <View style={[styles.summaryCard, { backgroundColor: colors.surface }]}>
             <View style={styles.summaryItem}>
-              <Ionicons name="flame" size={20} color={Colors.light.primary} />
-              <Text style={styles.summaryValue}>{dailyTotals.totalCalories}</Text>
-              <Text style={styles.summaryLabel}>calories</Text>
+              <Ionicons name="flame" size={20} color={colors.primary} />
+              <Text style={[styles.summaryValue, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>{dailyTotals.totalCalories}</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>calories</Text>
             </View>
-            <View style={styles.summaryDivider} />
+            <View style={[styles.summaryDivider, { backgroundColor: colors.border }]} />
             <View style={styles.summaryItem}>
-              <Ionicons name="cube" size={20} color={Colors.light.secondary} />
-              <Text style={styles.summaryValue}>{dailyTotals.totalSugar.toFixed(1)}</Text>
-              <Text style={styles.summaryLabel}>sugar (g)</Text>
+              <Ionicons name="cube" size={20} color={colors.secondary} />
+              <Text style={[styles.summaryValue, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>{dailyTotals.totalSugar.toFixed(1)}</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>sugar (g)</Text>
             </View>
-            <View style={styles.summaryDivider} />
+            <View style={[styles.summaryDivider, { backgroundColor: colors.border }]} />
             <View style={styles.summaryItem}>
-              <Ionicons name="fitness" size={20} color={Colors.light.accent} />
-              <Text style={styles.summaryValue}>{dailyTotals.totalProtein.toFixed(1)}</Text>
-              <Text style={styles.summaryLabel}>protein (g)</Text>
+              <Ionicons name="fitness" size={20} color={colors.accent} />
+              <Text style={[styles.summaryValue, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>{dailyTotals.totalProtein.toFixed(1)}</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>protein (g)</Text>
             </View>
           </View>
         </View>
 
         {/* Meals for Selected Date */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Meals</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Meals</Text>
           {selectedDateMeals.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="calendar-outline" size={48} color={Colors.light.textSecondary} />
-              <Text style={styles.emptyStateText}>No meals logged for this day</Text>
+              <Ionicons name="calendar-outline" size={48} color={colors.textSecondary} />
+              <Text style={[styles.emptyStateText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>No meals logged for this day</Text>
             </View>
           ) : (
             selectedDateMeals.map((meal: Meal) => (
@@ -148,31 +149,31 @@ export default function HistoryScreen() {
         {/* Daily Statistics */}
         {selectedDateMeals.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Daily Breakdown</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Daily Breakdown</Text>
             <View style={styles.breakdownCard}>
               <View style={styles.breakdownRow}>
-                <Text style={styles.breakdownLabel}>Total Calories</Text>
-                <Text style={styles.breakdownValue}>{dailyTotals.totalCalories} cal</Text>
+                <Text style={[styles.breakdownLabel, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Total Calories</Text>
+                <Text style={[styles.breakdownValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{dailyTotals.totalCalories} cal</Text>
               </View>
               <View style={styles.breakdownRow}>
-                <Text style={styles.breakdownLabel}>Total Sugar</Text>
-                <Text style={styles.breakdownValue}>{dailyTotals.totalSugar.toFixed(1)}g</Text>
+                <Text style={[styles.breakdownLabel, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Total Sugar</Text>
+                <Text style={[styles.breakdownValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{dailyTotals.totalSugar.toFixed(1)}g</Text>
               </View>
               <View style={styles.breakdownRow}>
-                <Text style={styles.breakdownLabel}>Protein</Text>
-                <Text style={styles.breakdownValue}>{dailyTotals.totalProtein.toFixed(1)}g</Text>
+                <Text style={[styles.breakdownLabel, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Protein</Text>
+                <Text style={[styles.breakdownValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{dailyTotals.totalProtein.toFixed(1)}g</Text>
               </View>
               <View style={styles.breakdownRow}>
-                <Text style={styles.breakdownLabel}>Carbs</Text>
-                <Text style={styles.breakdownValue}>{dailyTotals.totalCarbs.toFixed(1)}g</Text>
+                <Text style={[styles.breakdownLabel, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Carbs</Text>
+                <Text style={[styles.breakdownValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{dailyTotals.totalCarbs.toFixed(1)}g</Text>
               </View>
               <View style={styles.breakdownRow}>
-                <Text style={styles.breakdownLabel}>Fat</Text>
-                <Text style={styles.breakdownValue}>{dailyTotals.totalFat.toFixed(1)}g</Text>
+                <Text style={[styles.breakdownLabel, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Fat</Text>
+                <Text style={[styles.breakdownValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{dailyTotals.totalFat.toFixed(1)}g</Text>
               </View>
               <View style={styles.breakdownRow}>
-                <Text style={styles.breakdownLabel}>Meals Logged</Text>
-                <Text style={styles.breakdownValue}>{selectedDateMeals.length}</Text>
+                <Text style={[styles.breakdownLabel, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Meals Logged</Text>
+                <Text style={[styles.breakdownValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{selectedDateMeals.length}</Text>
               </View>
             </View>
           </View>
@@ -185,18 +186,17 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
+    backgroundColor: "transparent",
   },
   header: {
-    backgroundColor: Colors.light.primary,
+    backgroundColor: "transparent",
     padding: Spacing.lg,
     borderBottomLeftRadius: BorderRadius.xl,
     borderBottomRightRadius: BorderRadius.xl,
   },
   headerTitle: {
-    ...Typography.fontSize.xxl,
     fontWeight: Typography.fontWeight.bold,
-    color: Colors.light.background,
+    color: "#FFFFFF",
     textAlign: 'center',
   },
   content: {
@@ -207,9 +207,8 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   sectionTitle: {
-    ...Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.semibold,
-    color: Colors.light.text,
+    color: "#333333",
     marginBottom: Spacing.sm,
   },
   chartContainer: {
@@ -217,7 +216,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
   },
   dayCard: {
-    backgroundColor: Colors.light.surface,
+    backgroundColor: "#F5F5F5",
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     marginRight: Spacing.sm,
@@ -225,40 +224,37 @@ const styles = StyleSheet.create({
     minWidth: 70,
   },
   dayCardActive: {
-    backgroundColor: Colors.light.primary,
+    backgroundColor: "transparent",
   },
   dayName: {
-    ...Typography.fontSize.sm,
-    color: Colors.light.text,
+    color: "#333333",
     marginBottom: Spacing.sm,
   },
   dayNameActive: {
-    color: Colors.light.background,
+    color: "#FFFFFF",
     fontWeight: Typography.fontWeight.semibold,
   },
   calorieBar: {
     width: 12,
-    backgroundColor: Colors.light.primary,
+    backgroundColor: "transparent",
     borderRadius: 6,
     marginBottom: Spacing.xs,
   },
   calorieBarActive: {
-    backgroundColor: Colors.light.background,
+    backgroundColor: "transparent",
   },
   calorieText: {
-    ...Typography.fontSize.sm,
     fontWeight: Typography.fontWeight.bold,
-    color: Colors.light.text,
+    color: "#333333",
   },
   calorieTextActive: {
-    color: Colors.light.background,
+    color: "#FFFFFF",
   },
   sugarText: {
-    ...Typography.fontSize.xs,
-    color: Colors.light.textSecondary,
+    color: "#666666",
   },
   sugarTextActive: {
-    color: Colors.light.background,
+    color: "#FFFFFF",
     opacity: 0.9,
   },
   dateHeader: {
@@ -267,25 +263,23 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   dateTitle: {
-    ...Typography.fontSize.xl,
     fontWeight: Typography.fontWeight.bold,
-    color: Colors.light.text,
+    color: "#333333",
   },
   todayBadge: {
-    backgroundColor: Colors.light.success,
+    backgroundColor: "#4CAF50",
     borderRadius: BorderRadius.sm,
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
     marginLeft: Spacing.sm,
   },
   todayText: {
-    ...Typography.fontSize.xs,
     fontWeight: Typography.fontWeight.semibold,
-    color: Colors.light.background,
+    color: "#FFFFFF",
   },
   summaryCard: {
     flexDirection: 'row',
-    backgroundColor: Colors.light.surface,
+    backgroundColor: "#F5F5F5",
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     alignItems: 'center',
@@ -295,31 +289,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   summaryValue: {
-    ...Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.bold,
-    color: Colors.light.text,
+    color: "#333333",
     marginTop: Spacing.xs,
   },
   summaryLabel: {
-    ...Typography.fontSize.xs,
-    color: Colors.light.textSecondary,
+    color: "#666666",
   },
   summaryDivider: {
     width: 1,
     height: 40,
-    backgroundColor: Colors.light.border,
+    backgroundColor: "#E0E0E0",
   },
   emptyState: {
     alignItems: 'center',
     padding: Spacing.xxl,
   },
   emptyStateText: {
-    ...Typography.fontSize.md,
-    color: Colors.light.textSecondary,
+    color: "#666666",
     marginTop: Spacing.md,
   },
   breakdownCard: {
-    backgroundColor: Colors.light.surface,
+    backgroundColor: "#F5F5F5",
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
   },
@@ -328,15 +319,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: Spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
+    borderBottomColor: "#E0E0E0",
   },
   breakdownLabel: {
-    ...Typography.fontSize.md,
-    color: Colors.light.text,
+    color: "#333333",
   },
   breakdownValue: {
-    ...Typography.fontSize.md,
     fontWeight: Typography.fontWeight.semibold,
-    color: Colors.light.primary,
+    color: "#FF6B6B",
   },
 });

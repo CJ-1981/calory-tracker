@@ -16,7 +16,8 @@ import { useDispatch } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
-import { Colors, Spacing, BorderRadius, Typography } from '../../src/theme';
+import { Spacing, BorderRadius, Typography } from '../../src/theme';
+import { useTheme } from '../../src/contexts/ThemeContext';
 import { MealType, FoodItem, Meal } from '../../src/models';
 import { addMeal } from '../../src/store';
 import { calculateMealTotals, calculateNutrition } from '../../src/utils/calculator';
@@ -31,10 +32,12 @@ import {
   searchFoodDatabase,
 } from '../../src/utils/foodDatabase';
 import { Alert } from '../../src/utils/alert';
+import { scaledFontSize } from '../../src/utils/fontUtils';
 
 export default function AddMealScreen() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+  const { colors, fontScale } = useTheme();
   const meals = useSelector((state: RootState) => state.meals.meals) || [];
 
   const [mealType, setMealType] = useState<MealType>('breakfast');
@@ -236,30 +239,32 @@ export default function AddMealScreen() {
   const selectedMealType = MEAL_TYPES.find((t) => t.value === mealType);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Log Meal</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.primary }]}>
+        <Text style={[styles.headerTitle, { color: colors.background }]}>Log Meal</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Meal Type Selector */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Meal Type</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Meal Type</Text>
           <View style={styles.mealTypes}>
             {MEAL_TYPES.map((type) => (
               <TouchableOpacity
                 key={type.value}
                 style={[
                   styles.mealTypeButton,
+                  { backgroundColor: colors.surface },
                   mealType === type.value && styles.mealTypeButtonActive,
                 ]}
                 onPress={() => setMealType(type.value as MealType)}
               >
-                <Text style={styles.mealTypeIcon}>{type.icon}</Text>
+                <Text style={[styles.mealTypeIcon, { fontSize: scaledFontSize(Typography.fontSize.xl, fontScale) }]}>{type.icon}</Text>
                 <Text
                   style={[
                     styles.mealTypeLabel,
-                    mealType === type.value && styles.mealTypeLabelActive,
+                    { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) },
+                    mealType === type.value && { color: colors.primary },
                   ]}
                 >
                   {type.label}
@@ -271,15 +276,15 @@ export default function AddMealScreen() {
 
         {/* Photo Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Photo (Optional)</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Photo (Optional)</Text>
           <View style={styles.photoButtons}>
-            <TouchableOpacity style={styles.photoButton} onPress={takePhoto}>
-              <Ionicons name="camera" size={24} color={Colors.light.primary} />
-              <Text style={styles.photoButtonText}>Take Photo</Text>
+            <TouchableOpacity style={[styles.photoButton, { backgroundColor: colors.surface }]} onPress={takePhoto}>
+              <Ionicons name="camera" size={24} color={colors.primary} />
+              <Text style={[styles.photoButtonText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Take Photo</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.photoButton} onPress={pickImage}>
-              <Ionicons name="image" size={24} color={Colors.light.primary} />
-              <Text style={styles.photoButtonText}>Choose Photo</Text>
+            <TouchableOpacity style={[styles.photoButton, { backgroundColor: colors.surface }]} onPress={pickImage}>
+              <Ionicons name="image" size={24} color={colors.primary} />
+              <Text style={[styles.photoButtonText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Choose Photo</Text>
             </TouchableOpacity>
           </View>
           {photoUri && (
@@ -289,7 +294,7 @@ export default function AddMealScreen() {
                 style={styles.removePhoto}
                 onPress={() => setPhotoUri(undefined)}
               >
-                <Ionicons name="close-circle" size={24} color={Colors.light.danger} />
+                <Ionicons name="close-circle" size={24} color={colors.danger} />
               </TouchableOpacity>
             </View>
           )}
@@ -301,23 +306,23 @@ export default function AddMealScreen() {
             style={styles.searchFoodButton}
             onPress={() => setShowFoodSearch(true)}
           >
-            <Ionicons name="search" size={24} color={Colors.light.background} />
+            <Ionicons name="search" size={24} color={colors.background} />
             <View style={styles.searchFoodContent}>
-              <Text style={styles.searchFoodTitle}>Search Food Database</Text>
-              <Text style={styles.searchFoodSubtitle}>Quickly add common foods</Text>
+              <Text style={[styles.searchFoodTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Search Food Database</Text>
+              <Text style={[styles.searchFoodSubtitle, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Quickly add common foods</Text>
             </View>
-            <Ionicons name="chevron-forward" size={24} color={Colors.light.background} />
+            <Ionicons name="chevron-forward" size={24} color={colors.background} />
           </TouchableOpacity>
         </View>
 
         {/* Manual Entry */}
         <View style={styles.section}>
           <View style={styles.manualEntryHeader}>
-            <Text style={styles.sectionTitle}>Or Enter Manually</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Or Enter Manually</Text>
           </View>
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: colors.surface }]}>
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Food Name *</Text>
+              <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Food Name *</Text>
               <TextInput
                 style={styles.input}
                 value={foodName}
@@ -328,7 +333,7 @@ export default function AddMealScreen() {
 
             <View style={styles.row}>
               <View style={[styles.inputGroup, styles.flex1]}>
-                <Text style={styles.label}>Serving Size</Text>
+                <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Serving Size</Text>
                 <TextInput
                   style={styles.input}
                   value={servingSize}
@@ -338,7 +343,7 @@ export default function AddMealScreen() {
                 />
               </View>
               <View style={[styles.inputGroup, styles.flex1]}>
-                <Text style={styles.label}>Unit</Text>
+                <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Unit</Text>
                 <TextInput
                   style={styles.input}
                   value={servingUnit}
@@ -350,7 +355,7 @@ export default function AddMealScreen() {
 
             <View style={styles.row}>
               <View style={[styles.inputGroup, styles.flex1]}>
-                <Text style={styles.label}>Calories *</Text>
+                <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Calories *</Text>
                 <TextInput
                   style={styles.input}
                   value={calories}
@@ -360,7 +365,7 @@ export default function AddMealScreen() {
                 />
               </View>
               <View style={[styles.inputGroup, styles.flex1]}>
-                <Text style={styles.label}>Sugar (g) *</Text>
+                <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Sugar (g) *</Text>
                 <TextInput
                   style={styles.input}
                   value={sugar}
@@ -373,7 +378,7 @@ export default function AddMealScreen() {
 
             <View style={styles.row}>
               <View style={[styles.inputGroup, styles.flex1]}>
-                <Text style={styles.label}>Protein (g)</Text>
+                <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Protein (g)</Text>
                 <TextInput
                   style={styles.input}
                   value={protein}
@@ -383,7 +388,7 @@ export default function AddMealScreen() {
                 />
               </View>
               <View style={[styles.inputGroup, styles.flex1]}>
-                <Text style={styles.label}>Carbs (g)</Text>
+                <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Carbs (g)</Text>
                 <TextInput
                   style={styles.input}
                   value={carbs}
@@ -395,7 +400,7 @@ export default function AddMealScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Fat (g)</Text>
+              <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Fat (g)</Text>
               <TextInput
                 style={styles.input}
                 value={fat}
@@ -406,8 +411,8 @@ export default function AddMealScreen() {
             </View>
 
             <TouchableOpacity style={styles.addButton} onPress={addFoodItem}>
-              <Ionicons name="add" size={20} color={Colors.light.background} />
-              <Text style={styles.addButtonText}>Add to Meal</Text>
+              <Ionicons name="add" size={20} color={colors.background} />
+              <Text style={[styles.addButtonText, { color: colors.background, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Add to Meal</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -415,36 +420,36 @@ export default function AddMealScreen() {
         {/* Food List */}
         {currentFoods.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Foods in this Meal</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Foods in this Meal</Text>
             {currentFoods.map((food) => (
-              <View key={food.foodId} style={styles.foodItem}>
+              <View key={food.foodId} style={[styles.foodItem, { backgroundColor: colors.surface }]}>
                 <View style={styles.flex1}>
-                  <Text style={styles.foodName}>{food.name}</Text>
-                  <Text style={styles.foodDetails}>
+                  <Text style={[styles.foodName, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{food.name}</Text>
+                  <Text style={[styles.foodDetails, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
                     {food.quantity}{food.servingUnit} • {food.calories} cal • {food.sugar}g sugar
                   </Text>
                 </View>
                 <TouchableOpacity onPress={() => removeFood(food.foodId)}>
-                  <Ionicons name="trash-outline" size={20} color={Colors.light.danger} />
+                  <Ionicons name="trash-outline" size={20} color={colors.danger} />
                 </TouchableOpacity>
               </View>
             ))}
 
-            <View style={styles.totalsCard}>
-              <Text style={styles.totalsTitle}>Meal Totals</Text>
+            <View style={[styles.totalsCard, { backgroundColor: colors.surface }]}>
+              <Text style={[styles.totalsTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Meal Totals</Text>
               <View style={styles.totalsRow}>
-                <Text style={styles.totalLabel}>Calories:</Text>
-                <Text style={styles.totalValue}>{mealTotals.totalCalories} cal</Text>
+                <Text style={[styles.totalLabel, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Calories:</Text>
+                <Text style={[styles.totalValue, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>{mealTotals.totalCalories} cal</Text>
               </View>
               <View style={styles.totalsRow}>
-                <Text style={styles.totalLabel}>Sugar:</Text>
-                <Text style={[styles.totalValue, { color: Colors.light.secondary }]}>
+                <Text style={[styles.totalLabel, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Sugar:</Text>
+                <Text style={[styles.totalValue, { color: colors.secondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
                   {mealTotals.totalSugar.toFixed(1)}g
                 </Text>
               </View>
               <View style={styles.totalsRow}>
-                <Text style={styles.totalLabel}>Protein:</Text>
-                <Text style={styles.totalValue}>{mealTotals.totalProtein.toFixed(1)}g</Text>
+                <Text style={[styles.totalLabel, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Protein:</Text>
+                <Text style={[styles.totalValue, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>{mealTotals.totalProtein.toFixed(1)}g</Text>
               </View>
             </View>
           </View>
@@ -452,12 +457,13 @@ export default function AddMealScreen() {
 
         {/* Notes */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Notes (Optional)</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Notes (Optional)</Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            style={[styles.input, styles.textArea, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}
             value={notes}
             onChangeText={setNotes}
             placeholder="Add any notes about this meal..."
+            placeholderTextColor={colors.textSecondary}
             multiline
             numberOfLines={3}
           />
@@ -465,11 +471,11 @@ export default function AddMealScreen() {
 
         {/* Save Button */}
         <TouchableOpacity
-          style={[styles.saveButton, currentFoods.length === 0 && styles.saveButtonDisabled]}
+          style={[styles.saveButton, { backgroundColor: currentFoods.length > 0 ? colors.primary : colors.border }]}
           onPress={saveMeal}
           disabled={currentFoods.length === 0}
         >
-          <Text style={styles.saveButtonText}>Save Meal</Text>
+          <Text style={[styles.saveButtonText, { color: currentFoods.length > 0 ? colors.background : colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Save Meal</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -482,26 +488,27 @@ export default function AddMealScreen() {
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <TouchableOpacity onPress={() => setShowFoodSearch(false)}>
-              <Text style={styles.modalCancel}>Cancel</Text>
+              <Text style={[styles.modalCancel, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Cancel</Text>
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>Search Foods</Text>
+            <Text style={[styles.modalTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Search Foods</Text>
             <View style={{ width: 50 }} />
           </View>
 
           {/* Search Input */}
           <View style={styles.searchSection}>
-            <View style={styles.searchInputWrapper}>
-              <Ionicons name="search" size={20} color={Colors.light.textSecondary} />
+            <View style={[styles.searchInputWrapper, { backgroundColor: colors.surface }]}>
+              <Ionicons name="search" size={20} color={colors.textSecondary} />
               <TextInput
-                style={styles.searchInput}
+                style={[styles.searchInput, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}
                 placeholder="Search foods..."
+                placeholderTextColor={colors.textSecondary}
                 value={searchQuery}
                 onChangeText={handleSearch}
                 autoFocus
               />
               {searchQuery.length > 0 && (
                 <TouchableOpacity onPress={() => { setSearchQuery(''); setSearchResults([]); }}>
-                  <Ionicons name="close-circle" size={20} color={Colors.light.textSecondary} />
+                  <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
                 </TouchableOpacity>
               )}
             </View>
@@ -518,7 +525,8 @@ export default function AddMealScreen() {
                 key={category}
                 style={[
                   styles.categoryChip,
-                  selectedCategory === category && styles.categoryChipActive,
+                  { backgroundColor: colors.surface },
+                  selectedCategory === category && { backgroundColor: colors.primary },
                 ]}
                 onPress={() => {
                   setSelectedCategory(category);
@@ -534,7 +542,8 @@ export default function AddMealScreen() {
                 <Text
                   style={[
                     styles.categoryChipText,
-                    selectedCategory === category && styles.categoryChipTextActive,
+                    { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) },
+                    selectedCategory === category && { color: colors.background },
                   ]}
                 >
                   {category}
@@ -546,28 +555,28 @@ export default function AddMealScreen() {
           {/* Search Results */}
           {searchQuery.length === 0 ? (
             <View style={styles.emptySearchState}>
-              <Ionicons name="search" size={48} color={Colors.light.textSecondary} />
-              <Text style={styles.emptySearchTitle}>Search for foods</Text>
-              <Text style={styles.emptySearchText}>
+              <Ionicons name="search" size={48} color={colors.textSecondary} />
+              <Text style={[styles.emptySearchTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Search for foods</Text>
+              <Text style={[styles.emptySearchText, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
                 Try searching for "apple", "chicken", "rice", etc.
               </Text>
             </View>
           ) : searchResults.length === 0 ? (
             <View style={styles.emptySearchState}>
-              <Ionicons name="sad-outline" size={48} color={Colors.light.textSecondary} />
-              <Text style={styles.emptySearchTitle}>No foods found</Text>
-              <Text style={styles.emptySearchText}>Try a different search term</Text>
+              <Ionicons name="sad-outline" size={48} color={colors.textSecondary} />
+              <Text style={[styles.emptySearchTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>No foods found</Text>
+              <Text style={[styles.emptySearchText, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Try a different search term</Text>
             </View>
           ) : (
             <FlatList
               data={searchResults}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
-                <View style={styles.foodSearchResult}>
+                <View style={[styles.foodSearchResult, { backgroundColor: colors.surface }]}>
                   <View style={styles.foodSearchInfo}>
-                    <Text style={styles.foodSearchName}>{item.name}</Text>
-                    <Text style={styles.foodSearchCategory}>{item.category}</Text>
-                    <Text style={styles.foodSearchNutrition}>
+                    <Text style={[styles.foodSearchName, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{item.name}</Text>
+                    <Text style={[styles.foodSearchCategory, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>{item.category}</Text>
+                    <Text style={[styles.foodSearchNutrition, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
                       {item.calories} cal • {item.sugar}g sugar
                     </Text>
                   </View>
@@ -582,8 +591,8 @@ export default function AddMealScreen() {
                         style={styles.portionButton}
                         onPress={() => addFoodFromDatabase(item, index)}
                       >
-                        <Text style={styles.portionButtonName}>{portion.name}</Text>
-                        <Text style={styles.portionButtonSize}>{portion.size}{item.servingUnit}</Text>
+                        <Text style={[styles.portionButtonName, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{portion.name}</Text>
+                        <Text style={[styles.portionButtonSize, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>{portion.size}{item.servingUnit}</Text>
                       </TouchableOpacity>
                     ))}
                   </ScrollView>
@@ -601,18 +610,17 @@ export default function AddMealScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
+    backgroundColor: "transparent",
   },
   header: {
-    backgroundColor: Colors.light.primary,
+    backgroundColor: "transparent",
     padding: Spacing.lg,
     borderBottomLeftRadius: BorderRadius.xl,
     borderBottomRightRadius: BorderRadius.xl,
   },
   headerTitle: {
-    ...Typography.fontSize.xxl,
     fontWeight: Typography.fontWeight.bold,
-    color: Colors.light.background,
+    color: "#FFFFFF",
     textAlign: 'center',
   },
   content: {
@@ -623,9 +631,8 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   sectionTitle: {
-    ...Typography.fontSize.md,
     fontWeight: Typography.fontWeight.semibold,
-    color: Colors.light.text,
+    color: "#333333",
     marginBottom: Spacing.sm,
   },
   mealTypes: {
@@ -636,7 +643,6 @@ const styles = StyleSheet.create({
   mealTypeButton: {
     flex: 1,
     minWidth: '45%',
-    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     alignItems: 'center',
@@ -644,19 +650,17 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   mealTypeButtonActive: {
-    borderColor: Colors.light.primary,
-    backgroundColor: `${Colors.light.primary}20`,
+    borderColor: "#FF6B6B",
+    backgroundColor: 'rgba(255, 107, 107, 0.2)',
   },
   mealTypeIcon: {
-    ...Typography.fontSize.xl,
     marginBottom: Spacing.xs,
   },
   mealTypeLabel: {
-    ...Typography.fontSize.sm,
-    color: Colors.light.text,
+    color: "#333333",
   },
   mealTypeLabelActive: {
-    color: Colors.light.primary,
+    color: "#FF6B6B",
     fontWeight: Typography.fontWeight.semibold,
   },
   photoButtons: {
@@ -665,14 +669,12 @@ const styles = StyleSheet.create({
   },
   photoButton: {
     flex: 1,
-    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     alignItems: 'center',
   },
   photoButtonText: {
-    ...Typography.fontSize.sm,
-    color: Colors.light.text,
+    color: "#333333",
     marginTop: Spacing.xs,
   },
   photoPreview: {
@@ -688,11 +690,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: Spacing.sm,
     right: Spacing.sm,
-    backgroundColor: Colors.light.background,
+    backgroundColor: "transparent",
     borderRadius: 12,
   },
   searchFoodButton: {
-    backgroundColor: Colors.light.primary,
+    backgroundColor: "transparent",
     borderRadius: BorderRadius.lg,
     padding: Spacing.lg,
     flexDirection: 'row',
@@ -703,13 +705,11 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.md,
   },
   searchFoodTitle: {
-    ...Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.bold,
-    color: Colors.light.background,
+    color: "#FFFFFF",
   },
   searchFoodSubtitle: {
-    ...Typography.fontSize.sm,
-    color: Colors.light.background,
+    color: "#FFFFFF",
     opacity: 0.9,
   },
   manualEntryHeader: {
@@ -718,7 +718,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   card: {
-    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
   },
@@ -726,20 +725,18 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   label: {
-    ...Typography.fontSize.sm,
     fontWeight: '500',
-    color: Colors.light.text,
+    color: "#333333",
     marginBottom: Spacing.xs,
   },
   input: {
-    backgroundColor: Colors.light.background,
+    backgroundColor: "transparent",
     borderRadius: BorderRadius.md,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    ...Typography.fontSize.md,
-    color: Colors.light.text,
+    color: "#333333",
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#E0E0E0",
   },
   textArea: {
     height: 80,
@@ -753,7 +750,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   addButton: {
-    backgroundColor: Colors.light.primary,
+    backgroundColor: "transparent",
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     flexDirection: 'row',
@@ -763,38 +760,33 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
   },
   addButtonText: {
-    ...Typography.fontSize.md,
     fontWeight: '600',
-    color: Colors.light.background,
+    color: "#FFFFFF",
   },
   foodItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
   },
   foodName: {
-    ...Typography.fontSize.md,
     fontWeight: '500',
-    color: Colors.light.text,
+    color: "#333333",
   },
   foodDetails: {
-    ...Typography.fontSize.sm,
-    color: Colors.light.textSecondary,
+    color: "#666666",
     marginTop: Spacing.xs,
   },
   totalsCard: {
-    backgroundColor: Colors.light.primary,
+    backgroundColor: "transparent",
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     marginTop: Spacing.sm,
   },
   totalsTitle: {
-    ...Typography.fontSize.md,
     fontWeight: '600',
-    color: Colors.light.background,
+    color: "#FFFFFF",
     marginBottom: Spacing.sm,
   },
   totalsRow: {
@@ -803,34 +795,31 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   totalLabel: {
-    ...Typography.fontSize.sm,
-    color: Colors.light.background,
+    color: "#FFFFFF",
     opacity: 0.9,
   },
   totalValue: {
-    ...Typography.fontSize.sm,
     fontWeight: 'bold',
-    color: Colors.light.background,
+    color: "#FFFFFF",
   },
   saveButton: {
-    backgroundColor: Colors.light.success,
+    backgroundColor: "#4CAF50",
     borderRadius: BorderRadius.lg,
     padding: Spacing.lg,
     alignItems: 'center',
     marginBottom: Spacing.xl,
   },
   saveButtonDisabled: {
-    backgroundColor: Colors.light.border,
+    backgroundColor: "#E0E0E0",
   },
   saveButtonText: {
-    ...Typography.fontSize.lg,
     fontWeight: 'bold',
-    color: Colors.light.background,
+    color: "#FFFFFF",
   },
   // Modal styles
   modalContainer: {
     flex: 1,
-    backgroundColor: Colors.light.background,
+    backgroundColor: "transparent",
   },
   modalHeader: {
     flexDirection: 'row',
@@ -838,58 +827,52 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: Spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
+    borderBottomColor: "#E0E0E0",
   },
   modalCancel: {
-    ...Typography.fontSize.md,
-    color: Colors.light.primary,
+    color: "#FF6B6B",
   },
   modalTitle: {
-    ...Typography.fontSize.lg,
     fontWeight: 'bold',
-    color: Colors.light.text,
+    color: "#333333",
   },
   searchSection: {
     padding: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
+    borderBottomColor: "#E0E0E0",
   },
   searchInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.md,
     paddingHorizontal: Spacing.md,
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#E0E0E0",
   },
   searchInput: {
     flex: 1,
     padding: Spacing.md,
-    ...Typography.fontSize.md,
-    color: Colors.light.text,
+    color: "#333333",
   },
   categoriesScroll: {
     padding: Spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
+    borderBottomColor: "#E0E0E0",
   },
   categoryChip: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.md,
-    backgroundColor: Colors.light.surface,
     marginRight: Spacing.sm,
   },
   categoryChipActive: {
-    backgroundColor: Colors.light.primary,
+    backgroundColor: "transparent",
   },
   categoryChipText: {
-    ...Typography.fontSize.sm,
-    color: Colors.light.text,
+    color: "#333333",
   },
   categoryChipTextActive: {
-    color: Colors.light.background,
+    color: "#FFFFFF",
     fontWeight: '600',
   },
   emptySearchState: {
@@ -897,14 +880,12 @@ const styles = StyleSheet.create({
     padding: Spacing.xxl,
   },
   emptySearchTitle: {
-    ...Typography.fontSize.lg,
     fontWeight: '600',
-    color: Colors.light.text,
+    color: "#333333",
     marginTop: Spacing.md,
   },
   emptySearchText: {
-    ...Typography.fontSize.sm,
-    color: Colors.light.textSecondary,
+    color: "#666666",
     marginTop: Spacing.xs,
     textAlign: 'center',
   },
@@ -914,30 +895,27 @@ const styles = StyleSheet.create({
   foodSearchResult: {
     padding: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
+    borderBottomColor: "#E0E0E0",
   },
   foodSearchInfo: {
     marginBottom: Spacing.sm,
   },
   foodSearchName: {
-    ...Typography.fontSize.md,
     fontWeight: '600',
-    color: Colors.light.text,
+    color: "#333333",
   },
   foodSearchCategory: {
-    ...Typography.fontSize.sm,
-    color: Colors.light.primary,
+    color: "#FF6B6B",
     marginTop: Spacing.xs,
   },
   foodSearchNutrition: {
-    ...Typography.fontSize.sm,
-    color: Colors.light.textSecondary,
+    color: "#666666",
   },
   portionsScroll: {
     marginTop: Spacing.sm,
   },
   portionButton: {
-    backgroundColor: Colors.light.primary,
+    backgroundColor: "transparent",
     borderRadius: BorderRadius.md,
     padding: Spacing.sm,
     marginRight: Spacing.sm,
@@ -945,13 +923,11 @@ const styles = StyleSheet.create({
     minWidth: 80,
   },
   portionButtonName: {
-    ...Typography.fontSize.sm,
     fontWeight: '600',
-    color: Colors.light.background,
+    color: "#FFFFFF",
   },
   portionButtonSize: {
-    ...Typography.fontSize.xs,
-    color: Colors.light.background,
+    color: "#FFFFFF",
     opacity: 0.9,
   },
 });

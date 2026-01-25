@@ -1,11 +1,17 @@
 import { configureStore } from '@reduxjs/toolkit';
 import mealSlice from './mealSlice';
 import goalSlice from './goalSlice';
+import settingsSlice from './settingsSlice';
+import type { DarkModePreference, FontSizeScale, SettingsState } from './settingsSlice';
+
+// createSlice returns an object with a reducer property, while other slices might not
+const settingsReducer = settingsSlice?.reducer || settingsSlice;
 
 export const store = configureStore({
   reducer: {
     meals: mealSlice,
     goals: goalSlice,
+    settings: settingsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -18,8 +24,10 @@ export const store = configureStore({
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
-// Re-export actions
+// Re-export actions and types
 export { loadMeals, addMeal, updateMeal, deleteMeal } from './mealSlice';
 export { loadGoals, updateGoal, setDefaultGoal } from './goalSlice';
+export { loadSettings, setDarkMode, setFontSize, FONT_SCALE_MULTIPLIERS } from './settingsSlice';
 export { saveMeals } from './mealSlice';
 export { saveGoals } from './goalSlice';
+export type { DarkModePreference, FontSizeScale, SettingsState };

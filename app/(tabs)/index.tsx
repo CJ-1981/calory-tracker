@@ -11,7 +11,8 @@ import { useRouter } from 'expo-router';
 import { useSelector, useDispatch } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 
-import { Colors, Spacing, BorderRadius, Typography } from '../../src/theme';
+import { Spacing, BorderRadius, Typography } from '../../src/theme';
+import { useTheme } from '../../src/contexts/ThemeContext';
 import { ProgressBar } from '../../src/components/ProgressBar';
 import { SugarAlert } from '../../src/components/SugarAlert';
 import { MealCard } from '../../src/components/MealCard';
@@ -20,15 +21,14 @@ import { selectTodayMeals } from '../../src/store/mealSlice';
 import { calculateDailyTotals } from '../../src/utils/calculator';
 import { checkGoalProgress, checkSugarWarnings, calculateDailySummary } from '../../src/services/analyticsService';
 import { Meal, DailyLog } from '../../src/models';
+import { scaledFontSize } from '../../src/utils/fontUtils';
 
 export default function DashboardScreen() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+  const { colors, fontScale } = useTheme();
   const todayMeals = useSelector((state: RootState) => selectTodayMeals(state)) || [];
   const activeGoal = useSelector((state: RootState) => state.goals.activeGoal);
-
-  console.log('Dashboard - todayMeals:', todayMeals);
-  console.log('Dashboard - activeGoal:', activeGoal);
 
   const [dailyLog, setDailyLog] = useState<DailyLog | null>(null);
   const [warnings, setWarnings] = useState<any[]>([]);
@@ -59,21 +59,21 @@ export default function DashboardScreen() {
   const getProgressColor = (status: string) => {
     switch (status) {
       case 'exceeded':
-        return Colors.light.danger;
+        return colors.danger;
       case 'warning':
-        return Colors.light.warning;
+        return colors.warning;
       case 'approaching':
         return '#FFA07A';
       default:
-        return Colors.light.success;
+        return colors.success;
     }
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Today's Summary</Text>
-        <Text style={styles.headerDate}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.primary }]}>
+        <Text style={[styles.headerTitle, { color: colors.background }]}>Today's Summary</Text>
+        <Text style={[styles.headerDate, { color: colors.background }]}>
           {new Date().toLocaleDateString('en-US', {
             weekday: 'long',
             month: 'short',
@@ -93,16 +93,16 @@ export default function DashboardScreen() {
         )}
 
         {/* Calories Card */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <View style={styles.cardHeader}>
-            <Ionicons name="flame" size={24} color={Colors.light.primary} />
-            <Text style={styles.cardTitle}>Calories</Text>
+            <Ionicons name="flame" size={24} color={colors.primary} />
+            <Text style={[styles.cardTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Calories</Text>
           </View>
           {calorieProgress ? (
             <>
               <View style={styles.progressContainer}>
-                <Text style={styles.progressValue}>{dailyLog?.totalCalories || 0}</Text>
-                <Text style={styles.progressTarget}> / {activeGoal?.calorieTarget} cal</Text>
+                <Text style={[styles.progressValue, { color: colors.text, fontSize: Typography.fontSize.xxl * fontScale }]}>{dailyLog?.totalCalories || 0}</Text>
+                <Text style={[styles.progressTarget, { color: colors.textSecondary }]}> / {activeGoal?.calorieTarget} cal</Text>
               </View>
               <ProgressBar
                 progress={calorieProgress.percentage}
@@ -111,21 +111,21 @@ export default function DashboardScreen() {
               />
             </>
           ) : (
-            <Text style={styles.noDataText}>No goal set</Text>
+            <Text style={[styles.noDataText, { color: colors.textSecondary }]}>No goal set</Text>
           )}
         </View>
 
         {/* Sugar Card */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <View style={styles.cardHeader}>
-            <Ionicons name="cube" size={24} color={Colors.light.secondary} />
-            <Text style={styles.cardTitle}>Sugar</Text>
+            <Ionicons name="cube" size={24} color={colors.secondary} />
+            <Text style={[styles.cardTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Sugar</Text>
           </View>
           {sugarProgress ? (
             <>
               <View style={styles.progressContainer}>
-                <Text style={styles.progressValue}>{(dailyLog?.totalSugar || 0).toFixed(1)}</Text>
-                <Text style={styles.progressTarget}> / {activeGoal?.sugarTarget}g</Text>
+                <Text style={[styles.progressValue, { color: colors.text, fontSize: Typography.fontSize.xxl * fontScale }]}>{(dailyLog?.totalSugar || 0).toFixed(1)}</Text>
+                <Text style={[styles.progressTarget, { color: colors.textSecondary }]}> / {activeGoal?.sugarTarget}g</Text>
               </View>
               <ProgressBar
                 progress={sugarProgress.percentage}
@@ -134,26 +134,26 @@ export default function DashboardScreen() {
               />
             </>
           ) : (
-            <Text style={styles.noDataText}>No goal set</Text>
+            <Text style={[styles.noDataText, { color: colors.textSecondary }]}>No goal set</Text>
           )}
         </View>
 
         {/* Macros */}
         {dailyLog && (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Macros</Text>
+          <View style={[styles.card, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.cardTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Macros</Text>
             <View style={styles.macroRow}>
               <View style={styles.macroItem}>
-                <Text style={styles.macroValue}>{dailyLog.totalProtein.toFixed(1)}g</Text>
-                <Text style={styles.macroLabel}>Protein</Text>
+                <Text style={[styles.macroValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>{dailyLog.totalProtein.toFixed(1)}g</Text>
+                <Text style={[styles.macroLabel, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>Protein</Text>
               </View>
               <View style={styles.macroItem}>
-                <Text style={styles.macroValue}>{dailyLog.totalCarbs.toFixed(1)}g</Text>
-                <Text style={styles.macroLabel}>Carbs</Text>
+                <Text style={[styles.macroValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>{dailyLog.totalCarbs.toFixed(1)}g</Text>
+                <Text style={[styles.macroLabel, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>Carbs</Text>
               </View>
               <View style={styles.macroItem}>
-                <Text style={styles.macroValue}>{dailyLog.totalFat.toFixed(1)}g</Text>
-                <Text style={styles.macroLabel}>Fat</Text>
+                <Text style={[styles.macroValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>{dailyLog.totalFat.toFixed(1)}g</Text>
+                <Text style={[styles.macroLabel, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>Fat</Text>
               </View>
             </View>
           </View>
@@ -162,16 +162,16 @@ export default function DashboardScreen() {
         {/* Today's Meals */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Today's Meals</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Today's Meals</Text>
             <TouchableOpacity onPress={() => router.push('/(tabs)/history')}>
-              <Text style={styles.seeAllText}>See All</Text>
+              <Text style={[styles.seeAllText, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>See All</Text>
             </TouchableOpacity>
           </View>
           {todayMeals.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="restaurant-outline" size={48} color={Colors.light.textSecondary} />
-              <Text style={styles.emptyStateText}>No meals logged today</Text>
-              <Text style={styles.emptyStateSubtext}>Tap the button below to add your first meal</Text>
+              <Ionicons name="restaurant-outline" size={48} color={colors.textSecondary} />
+              <Text style={[styles.emptyStateText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>No meals logged today</Text>
+              <Text style={[styles.emptyStateSubtext, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Tap the button below to add your first meal</Text>
             </View>
           ) : (
             todayMeals.map((meal) => (
@@ -187,10 +187,10 @@ export default function DashboardScreen() {
 
       {/* Add Meal FAB */}
       <TouchableOpacity
-        style={styles.fab}
+        style={[styles.fab, { backgroundColor: colors.primary }]}
         onPress={() => router.push('/(tabs)/add-meal')}
       >
-        <Ionicons name="add" size={28} color={Colors.light.background} />
+        <Ionicons name="add" size={28} color={colors.background} />
       </TouchableOpacity>
     </View>
   );
@@ -199,23 +199,17 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
   },
   header: {
-    backgroundColor: Colors.light.primary,
     padding: Spacing.lg,
     paddingBottom: Spacing.xl,
     borderBottomLeftRadius: BorderRadius.xl,
     borderBottomRightRadius: BorderRadius.xl,
   },
   headerTitle: {
-    ...Typography.fontSize.xxl,
     fontWeight: Typography.fontWeight.bold,
-    color: Colors.light.background,
   },
   headerDate: {
-    ...Typography.fontSize.md,
-    color: Colors.light.background,
     opacity: 0.9,
     marginTop: Spacing.xs,
   },
@@ -227,11 +221,9 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   card: {
-    backgroundColor: Colors.light.background,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     marginBottom: Spacing.md,
-    shadowColor: Colors.light.text,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -243,9 +235,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   cardTitle: {
-    ...Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.semibold,
-    color: Colors.light.text,
     marginLeft: Spacing.sm,
   },
   progressContainer: {
@@ -254,17 +244,11 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   progressValue: {
-    ...Typography.fontSize.xxl,
     fontWeight: Typography.fontWeight.bold,
-    color: Colors.light.text,
   },
   progressTarget: {
-    ...Typography.fontSize.md,
-    color: Colors.light.textSecondary,
   },
   noDataText: {
-    ...Typography.fontSize.md,
-    color: Colors.light.textSecondary,
     textAlign: 'center',
     padding: Spacing.md,
   },
@@ -277,13 +261,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   macroValue: {
-    ...Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.bold,
-    color: Colors.light.primary,
   },
   macroLabel: {
-    ...Typography.fontSize.sm,
-    color: Colors.light.textSecondary,
   },
   section: {
     marginBottom: Spacing.xl,
@@ -295,27 +275,19 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   sectionTitle: {
-    ...Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.semibold,
-    color: Colors.light.text,
   },
   seeAllText: {
-    ...Typography.fontSize.sm,
-    color: Colors.light.primary,
   },
   emptyState: {
     alignItems: 'center',
     padding: Spacing.xxl,
   },
   emptyStateText: {
-    ...Typography.fontSize.md,
     fontWeight: Typography.fontWeight.medium,
-    color: Colors.light.text,
     marginTop: Spacing.md,
   },
   emptyStateSubtext: {
-    ...Typography.fontSize.sm,
-    color: Colors.light.textSecondary,
     textAlign: 'center',
     marginTop: Spacing.xs,
   },
@@ -326,10 +298,8 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.light.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: Colors.light.text,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,

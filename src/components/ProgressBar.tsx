@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
-import { Colors, Spacing, BorderRadius, Typography } from '../theme';
+import { Spacing, BorderRadius, Typography } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
+import { scaledFontSize } from '../utils/fontUtils';
 
 interface ProgressBarProps {
   progress: number; // 0-100
@@ -12,25 +14,25 @@ interface ProgressBarProps {
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({
   progress,
-  color = Colors.light.primary,
   height = 8,
   showLabel = false,
   label,
 }) => {
+  const { colors, fontScale } = useTheme();
   const clampedProgress = Math.min(100, Math.max(0, progress));
 
   return (
     <View style={styles.container}>
       {showLabel && label && (
-        <Text style={styles.label}>{label}</Text>
+        <Text style={[styles.label, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>{label}</Text>
       )}
-      <View style={[styles.track, { height }]}>
+      <View style={[styles.track, { backgroundColor: colors.border, height }]}>
         <View
           style={[
             styles.fill,
             {
               width: `${clampedProgress}%`,
-              backgroundColor: color,
+              backgroundColor: colors.primary,
               height,
             },
           ]}
@@ -45,7 +47,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   track: {
-    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.md,
     overflow: 'hidden',
   },
@@ -53,8 +54,6 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
   },
   label: {
-    ...Typography.fontSize.sm,
-    color: Colors.light.textSecondary,
     marginBottom: Spacing.xs,
   },
 });

@@ -10,14 +10,17 @@ import {
 import { useSelector, useDispatch } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 
-import { Colors, Spacing, BorderRadius, Typography } from '../../src/theme';
+import { Spacing, BorderRadius, Typography } from '../../src/theme';
+import { useTheme } from '../../src/contexts/ThemeContext';
 import { Goal } from '../../src/models';
 import { RootState, AppDispatch } from '../../src/store';
 import { updateGoal, setDefaultGoal } from '../../src/store';
 import { DEFAULT_GOALS } from '../../src/utils/constants';
 import { Alert } from '../../src/utils/alert';
+import { scaledFontSize } from '../../src/utils/fontUtils';
 
 export default function GoalsScreen() {
+  const { colors, fontScale } = useTheme();
   const dispatch = useDispatch<AppDispatch>();
   const activeGoal = useSelector((state: RootState) => state.goals.activeGoal);
   const goals = useSelector((state: RootState) => state.goals.goals);
@@ -128,37 +131,38 @@ export default function GoalsScreen() {
     onValueChange,
     unit,
     icon,
-    color = Colors.light.primary,
+    color = colors.primary,
   }: any) => (
-    <View style={styles.goalCard}>
+    <View style={[styles.goalCard, { backgroundColor: colors.surface }]}>
       <View style={styles.goalHeader}>
         <Ionicons name={icon} size={24} color={color} />
-        <Text style={styles.goalLabel}>{label}</Text>
+        <Text style={[styles.goalLabel, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{label}</Text>
       </View>
       <View style={styles.inputRow}>
         <TextInput
-          style={styles.goalInput}
+          style={[styles.goalInput, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.xxl, fontScale) }]}
           value={value}
           onChangeText={onValueChange}
           keyboardType="numeric"
           placeholder="0"
+          placeholderTextColor={colors.textSecondary}
         />
-        <Text style={styles.goalUnit}>{unit}</Text>
+        <Text style={[styles.goalUnit, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{unit}</Text>
       </View>
     </View>
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Goals</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.primary }]}>
+        <Text style={[styles.headerTitle, { color: colors.background, fontSize: scaledFontSize(Typography.fontSize.xxl, fontScale) }]}>My Goals</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Info Card */}
-        <View style={styles.infoCard}>
-          <Ionicons name="information-circle" size={24} color={Colors.light.info} />
-          <Text style={styles.infoText}>
+        <View style={[styles.infoCard, { backgroundColor: colors.surface, borderColor: colors.info }]}>
+          <Ionicons name="information-circle" size={24} color={colors.info} />
+          <Text style={[styles.infoText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
             Set your daily nutritional targets. The app will track your progress and alert you
             when approaching your limits.
           </Text>
@@ -171,37 +175,38 @@ export default function GoalsScreen() {
           onValueChange={setCalorieTarget}
           unit="cal"
           icon="flame"
-          color={Colors.light.primary}
+          color={colors.primary}
         />
 
         {/* Sugar Goal - Primary Focus */}
-        <View style={styles.sugarFocusCard}>
+        <View style={[styles.sugarFocusCard, { backgroundColor: colors.surface, borderColor: colors.secondary }]}>
           <View style={styles.sugarFocusHeader}>
-            <Ionicons name="cube" size={28} color={Colors.light.secondary} />
+            <Ionicons name="cube" size={28} color={colors.secondary} />
             <View style={styles.sugarFocusText}>
-              <Text style={styles.sugarFocusTitle}>Daily Sugar Limit</Text>
-              <Text style={styles.sugarFocusSubtitle}>Primary tracking metric</Text>
+              <Text style={[styles.sugarFocusTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Daily Sugar Limit</Text>
+              <Text style={[styles.sugarFocusSubtitle, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Primary tracking metric</Text>
             </View>
           </View>
           <View style={styles.inputRow}>
             <TextInput
-              style={[styles.goalInput, styles.sugarInput]}
+              style={[styles.goalInput, styles.sugarInput, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.xxl, fontScale) }]}
               value={sugarTarget}
               onChangeText={setSugarTarget}
               keyboardType="decimal-pad"
               placeholder="50"
+              placeholderTextColor={colors.textSecondary}
             />
-            <Text style={[styles.goalUnit, styles.sugarUnit]}>grams</Text>
+            <Text style={[styles.goalUnit, styles.sugarUnit, { color: colors.secondary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>grams</Text>
           </View>
           <View style={styles.sugarInfo}>
-            <Text style={styles.sugarInfoText}>
+            <Text style={[styles.sugarInfoText, { fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
               Recommended: 25-50g/day for most adults
             </Text>
           </View>
         </View>
 
         {/* Macro Goals */}
-        <Text style={styles.sectionTitle}>Macros (Optional)</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Macros (Optional)</Text>
 
         <GoalInput
           label="Protein Target"
@@ -209,7 +214,7 @@ export default function GoalsScreen() {
           onValueChange={setProteinTarget}
           unit="g"
           icon="fitness"
-          color={Colors.light.accent}
+          color={colors.accent}
         />
 
         <GoalInput
@@ -218,7 +223,7 @@ export default function GoalsScreen() {
           onValueChange={setCarbTarget}
           unit="g"
           icon="leaf"
-          color={Colors.light.success}
+          color={colors.success}
         />
 
         <GoalInput
@@ -227,22 +232,25 @@ export default function GoalsScreen() {
           onValueChange={setFatTarget}
           unit="g"
           icon="water"
-          color={Colors.light.warning}
+          color={colors.warning}
         />
 
         {/* Warnings Toggle */}
-        <View style={styles.toggleCard}>
+        <View style={[styles.toggleCard, { backgroundColor: colors.surface }]}>
           <View style={styles.toggleHeader}>
-            <Ionicons name="notifications" size={24} color={Colors.light.text} />
+            <Ionicons name="notifications" size={24} color={colors.text} />
             <View style={styles.toggleText}>
-              <Text style={styles.toggleTitle}>Sugar Alerts</Text>
-              <Text style={styles.toggleSubtitle}>
+              <Text style={[styles.toggleTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Sugar Alerts</Text>
+              <Text style={[styles.toggleSubtitle, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
                 Get notified when approaching sugar limit
               </Text>
             </View>
           </View>
           <TouchableOpacity
-            style={[styles.toggleButton, warningsEnabled && styles.toggleButtonActive]}
+            style={[
+              styles.toggleButton,
+              warningsEnabled ? { backgroundColor: colors.success } : { backgroundColor: colors.border },
+            ]}
             onPress={() => {
               setWarningsEnabled(!warningsEnabled);
               setHasChanges(true);
@@ -251,24 +259,24 @@ export default function GoalsScreen() {
             <Ionicons
               name={warningsEnabled ? 'checkmark' : 'close'}
               size={20}
-              color={Colors.light.background}
+              color={warningsEnabled ? colors.background : colors.text}
             />
           </TouchableOpacity>
         </View>
 
         {/* Action Buttons */}
         <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.secondaryButton} onPress={setDefaults}>
-            <Ionicons name="refresh" size={20} color={Colors.light.primary} />
-            <Text style={styles.secondaryButtonText}>Reset to Defaults</Text>
+          <TouchableOpacity style={[styles.secondaryButton, { backgroundColor: colors.surface }]} onPress={setDefaults}>
+            <Ionicons name="refresh" size={20} color={colors.primary} />
+            <Text style={[styles.secondaryButtonText, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Reset to Defaults</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.primaryButton, !hasChanges && styles.primaryButtonDisabled]}
+            style={[styles.primaryButton, { backgroundColor: hasChanges ? colors.primary : colors.border }]}
             onPress={handleSave}
             disabled={!hasChanges}
           >
-            <Text style={styles.primaryButtonText}>Save Goals</Text>
+            <Text style={[styles.primaryButtonText, { color: hasChanges ? colors.background : colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Save Goals</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -279,18 +287,17 @@ export default function GoalsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
+    backgroundColor: "transparent",
   },
   header: {
-    backgroundColor: Colors.light.primary,
+    backgroundColor: "transparent",
     padding: Spacing.lg,
     borderBottomLeftRadius: BorderRadius.xl,
     borderBottomRightRadius: BorderRadius.xl,
   },
   headerTitle: {
-    ...Typography.fontSize.xxl,
     fontWeight: Typography.fontWeight.bold,
-    color: Colors.light.background,
+    color: "#FFFFFF",
     textAlign: 'center',
   },
   content: {
@@ -299,21 +306,18 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     flexDirection: 'row',
-    backgroundColor: `${Colors.light.info}20`,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: Colors.light.info,
+    borderColor: "#2196F3",
   },
   infoText: {
-    ...Typography.fontSize.sm,
-    color: Colors.light.text,
+    color: "#333333",
     flex: 1,
     marginLeft: Spacing.sm,
   },
   goalCard: {
-    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
@@ -324,9 +328,8 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   goalLabel: {
-    ...Typography.fontSize.md,
     fontWeight: Typography.fontWeight.semibold,
-    color: Colors.light.text,
+    color: "#333333",
     marginLeft: Spacing.sm,
   },
   inputRow: {
@@ -335,28 +338,25 @@ const styles = StyleSheet.create({
   },
   goalInput: {
     flex: 1,
-    backgroundColor: Colors.light.background,
+    backgroundColor: "transparent",
     borderRadius: BorderRadius.md,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    ...Typography.fontSize.xl,
     fontWeight: Typography.fontWeight.bold,
-    color: Colors.light.text,
+    color: "#333333",
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#E0E0E0",
   },
   goalUnit: {
-    ...Typography.fontSize.md,
-    color: Colors.light.textSecondary,
+    color: "#666666",
     marginLeft: Spacing.sm,
   },
   sugarFocusCard: {
-    backgroundColor: `${Colors.light.secondary}20`,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     marginBottom: Spacing.md,
     borderWidth: 2,
-    borderColor: Colors.light.secondary,
+    borderColor: "#4ECDC4",
   },
   sugarFocusHeader: {
     flexDirection: 'row',
@@ -368,43 +368,37 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.sm,
   },
   sugarFocusTitle: {
-    ...Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.bold,
-    color: Colors.light.text,
+    color: "#333333",
   },
   sugarFocusSubtitle: {
-    ...Typography.fontSize.sm,
-    color: Colors.light.textSecondary,
+    color: "#666666",
   },
   sugarInput: {
-    borderColor: Colors.light.secondary,
+    borderColor: "#4ECDC4",
   },
   sugarUnit: {
-    ...Typography.fontSize.md,
     fontWeight: Typography.fontWeight.semibold,
-    color: Colors.light.secondary,
+    color: "#4ECDC4",
   },
   sugarInfo: {
     marginTop: Spacing.sm,
     paddingTop: Spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: `${Colors.light.secondary}40`,
+    borderTopColor: "rgba(78, 205, 196, 0.25)",
   },
   sugarInfoText: {
-    ...Typography.fontSize.sm,
-    color: Colors.light.textSecondary,
+    color: "#666666",
     fontStyle: 'italic',
   },
   sectionTitle: {
-    ...Typography.fontSize.md,
     fontWeight: Typography.fontWeight.semibold,
-    color: Colors.light.text,
+    color: "#333333",
     marginTop: Spacing.md,
     marginBottom: Spacing.sm,
   },
   toggleCard: {
     flexDirection: 'row',
-    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     alignItems: 'center',
@@ -421,24 +415,22 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.sm,
   },
   toggleTitle: {
-    ...Typography.fontSize.md,
     fontWeight: Typography.fontWeight.semibold,
-    color: Colors.light.text,
+    color: "#333333",
   },
   toggleSubtitle: {
-    ...Typography.fontSize.sm,
-    color: Colors.light.textSecondary,
+    color: "#666666",
   },
   toggleButton: {
     width: 48,
     height: 28,
     borderRadius: 14,
-    backgroundColor: Colors.light.border,
+    backgroundColor: "#E0E0E0",
     justifyContent: 'center',
     alignItems: 'center',
   },
   toggleButtonActive: {
-    backgroundColor: Colors.light.success,
+    backgroundColor: "#4CAF50",
   },
   buttonRow: {
     flexDirection: 'row',
@@ -449,33 +441,26 @@ const styles = StyleSheet.create({
   secondaryButton: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.xs,
     borderWidth: 1,
-    borderColor: Colors.light.primary,
+    borderColor: "#FF6B6B",
   },
   secondaryButtonText: {
-    ...Typography.fontSize.md,
     fontWeight: Typography.fontWeight.semibold,
-    color: Colors.light.primary,
   },
   primaryButton: {
     flex: 1,
-    backgroundColor: Colors.light.primary,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     alignItems: 'center',
   },
   primaryButtonDisabled: {
-    backgroundColor: Colors.light.border,
   },
   primaryButtonText: {
-    ...Typography.fontSize.md,
     fontWeight: Typography.fontWeight.bold,
-    color: Colors.light.background,
   },
 });
