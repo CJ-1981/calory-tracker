@@ -104,9 +104,6 @@ export const TrendChart: React.FC<TrendChartProps> = ({
             focusedDataPointColor={colors.background}
             focusedDataPointRadius={6}
             focusedDataPointWidth={8}
-            areaChart
-            startFillColor={`${color}20`}
-            endFillColor={`${color}00`}
             isAnimated
             animationDuration={800}
             animateOnDataChange
