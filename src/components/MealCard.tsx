@@ -57,10 +57,10 @@ export const MealCard: React.FC<MealCardProps> = ({ meal, onPress, onDelete }) =
       {onDelete && (
         <TouchableOpacity
           onPress={onDelete}
-          style={styles.deleteButton}
+          style={[styles.deleteButton, { backgroundColor: colors.danger }]}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Text style={styles.deleteIcon}>✕</Text>
+          <Text style={[styles.deleteIcon, { color: colors.background }]}>✕</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -123,6 +123,11 @@ const styles = StyleSheet.create({
   deleteButton: {
     padding: Spacing.sm,
     marginLeft: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    minWidth: 32,
+    minHeight: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   deleteIcon: {
     fontSize: 20,
