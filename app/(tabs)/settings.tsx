@@ -189,36 +189,28 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Features Info */}
+        {/* Feedback & Support */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Features</Text>
-          <View style={[styles.featureItem, { backgroundColor: colors.surface }]}>
-            <Ionicons name="search" size={24} color={colors.primary} />
-            <View style={styles.featureContent}>
-              <Text style={[styles.featureTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Food Database</Text>
-              <Text style={[styles.featureDescription, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
-                60+ common foods with nutritional info
+          <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Feedback & Support</Text>
+          <TouchableOpacity
+            style={[styles.feedbackCard, { backgroundColor: colors.surface, borderColor: colors.primary }]}
+            onPress={() => {
+              if (typeof window !== 'undefined') {
+                window.open('https://github.com/CJ-1981/calory-tracker/issues', '_blank');
+              }
+            }}
+          >
+            <Ionicons name="logo-github" size={32} color={colors.primary} />
+            <View style={styles.feedbackContent}>
+              <Text style={[styles.feedbackTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>
+                Report Issues & Request Features
+              </Text>
+              <Text style={[styles.feedbackDescription, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+                Found a bug or have a suggestion? Let us know on GitHub!
               </Text>
             </View>
-          </View>
-          <View style={[styles.featureItem, { backgroundColor: colors.surface }]}>
-            <Ionicons name="cube" size={24} color={colors.secondary} />
-            <View style={styles.featureContent}>
-              <Text style={[styles.featureTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Sugar Tracking</Text>
-              <Text style={[styles.featureDescription, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
-                Monitor sugar intake with alerts
-              </Text>
-            </View>
-          </View>
-          <View style={[styles.featureItem, { backgroundColor: colors.surface }]}>
-            <Ionicons name="stats-chart" size={24} color={colors.accent} />
-            <View style={styles.featureContent}>
-              <Text style={[styles.featureTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Progress Charts</Text>
-              <Text style={[styles.featureDescription, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
-                Track your nutrition over time
-              </Text>
-            </View>
-          </View>
+            <Ionicons name="open" size={20} color={colors.primary} />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.footer}>
@@ -338,21 +330,22 @@ const styles = StyleSheet.create({
   dangerButtonSubtext: {
     marginTop: Spacing.xs,
   },
-  featureItem: {
+  feedbackCard: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
-    marginBottom: Spacing.sm,
+    padding: Spacing.lg,
+    borderWidth: 2,
+    marginTop: Spacing.sm,
   },
-  featureContent: {
+  feedbackContent: {
     flex: 1,
     marginLeft: Spacing.md,
   },
-  featureTitle: {
+  feedbackTitle: {
     fontWeight: Typography.fontWeight.semibold,
   },
-  featureDescription: {
+  feedbackDescription: {
     marginTop: Spacing.xs,
   },
   footer: {
