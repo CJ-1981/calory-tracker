@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router';
 import { useDispatch } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 import { Spacing, BorderRadius, Typography } from '../../src/theme';
 import { useTheme } from '../../src/contexts/ThemeContext';
@@ -41,6 +42,7 @@ export default function AddMealScreen() {
   const meals = useSelector((state: RootState) => state.meals.meals) || [];
 
   const [mealType, setMealType] = useState<MealType>('breakfast');
+  const [mealDate, setMealDate] = useState(new Date().toISOString().split('T')[0]);
   const [foodName, setFoodName] = useState('');
   const [servingSize, setServingSize] = useState('100');
   const [servingUnit, setServingUnit] = useState('g');
@@ -62,6 +64,54 @@ export default function AddMealScreen() {
   const [selectedFood, setSelectedFood] = useState<FoodDatabaseItem | null>(null);
   const [selectedPortion, setSelectedPortion] = useState<number>(100);
   const [fullscreenPhoto, setFullscreenPhoto] = useState<string | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showWebDatePicker, setShowWebDatePicker] = useState(false);
+  const [tempDate, setTempDate] = useState(mealDate);
+
+  const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+    if (selectedDate) {
+      const dateStr = selectedDate.toISOString().split('T')[0];
+      setMealDate(dateStr);
+    }
+  };
+
+  const formatDateDisplay = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const openDatePicker = () => {
+    if (Platform.OS === 'web') {
+      setTempDate(mealDate);
+      setShowWebDatePicker(true);
+    } else {
+      setShowDatePicker(true);
+    }
+  };
+
+  const generateLast30Days = () => {
+    const days = [];
+    for (let i = 0; i < 30; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      days.push(date);
+    }
+    return days;
+  };
+
+  const selectWebDate = (date: Date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    setMealDate(dateStr);
+    setShowWebDatePicker(false);
+  };
 
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -210,7 +260,7 @@ export default function AddMealScreen() {
     const totals = calculateMealTotals(currentFoods);
 
     const newMeal = {
-      date: new Date().toISOString().split('T')[0],
+      date: mealDate,
       type: mealType,
       foods: currentFoods,
       totalCalories: totals.totalCalories,
@@ -273,6 +323,36 @@ export default function AddMealScreen() {
               </TouchableOpacity>
             ))}
           </View>
+        </View>
+
+        {/* Date Picker */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Date</Text>
+          <TouchableOpacity
+            style={[styles.dateButton, { backgroundColor: colors.surface }]}
+            onPress={openDatePicker}
+          >
+            <Ionicons name="calendar" size={24} color={colors.primary} />
+            <View style={styles.dateButtonContent}>
+              <Text style={[styles.dateButtonText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>
+                {formatDateDisplay(mealDate)}
+              </Text>
+              <Text style={[styles.dateButtonSubtext, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+                {mealDate}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color={colors.textSecondary} />
+          </TouchableOpacity>
+
+          {Platform.OS !== 'web' && showDatePicker && (
+            <DateTimePicker
+              value={new Date(mealDate)}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'compact' : 'default'}
+              onChange={handleDateChange}
+              maximumDate={new Date()}
+            />
+          )}
         </View>
 
         {/* Photo Section */}
@@ -626,6 +706,62 @@ export default function AddMealScreen() {
           )}
         </View>
       </Modal>
+
+      {/* Web Date Picker Modal */}
+      {Platform.OS === 'web' && (
+        <Modal
+          visible={showWebDatePicker}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setShowWebDatePicker(false)}
+        >
+          <View style={styles.webDatePickerModal}>
+            <View style={[styles.webDatePickerContent, { backgroundColor: colors.surface }]}>
+              <View style={styles.webDatePickerHeader}>
+                <Text style={[styles.webDatePickerTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Select Date</Text>
+                <TouchableOpacity onPress={() => setShowWebDatePicker(false)}>
+                  <Ionicons name="close" size={24} color={colors.text} />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView style={styles.webDatePickerScroll}>
+                {generateLast30Days().map((date, index) => {
+                  const dateStr = date.toISOString().split('T')[0];
+                  const isSelected = dateStr === mealDate;
+                  const isToday = dateStr === new Date().toISOString().split('T')[0];
+
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      style={[
+                        styles.webDateItem,
+                        { backgroundColor: isSelected ? colors.primary : colors.background, borderColor: colors.border },
+                        isToday && { borderColor: colors.primary },
+                      ]}
+                      onPress={() => selectWebDate(date)}
+                    >
+                      <Text style={[
+                        styles.webDateText,
+                        { color: isSelected ? colors.background : colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) },
+                        isToday && { fontWeight: 'bold' },
+                      ]}>
+                        {formatDateDisplay(dateStr)}
+                        {isToday && ' (Today)'}
+                      </Text>
+                      <Text style={[
+                        styles.webDateSubtext,
+                        { color: isSelected ? colors.background : colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) },
+                      ]}>
+                        {dateStr}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 }
@@ -760,6 +896,34 @@ const styles = StyleSheet.create({
     color: "#333333",
     borderWidth: 1,
     borderColor: "#E0E0E0",
+  },
+  dateInput: {
+    backgroundColor: "transparent",
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+  },
+  dateHint: {
+    marginTop: Spacing.xs,
+    fontStyle: 'italic',
+  },
+  dateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+  },
+  dateButtonContent: {
+    flex: 1,
+    marginLeft: Spacing.md,
+  },
+  dateButtonText: {
+    fontWeight: Typography.fontWeight.semibold,
+  },
+  dateButtonSubtext: {
+    marginTop: 2,
   },
   textArea: {
     height: 80,
@@ -968,5 +1132,44 @@ const styles = StyleSheet.create({
     top: 50,
     right: 20,
     zIndex: 1,
+  },
+  webDatePickerModal: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  webDatePickerContent: {
+    borderTopLeftRadius: BorderRadius.xl,
+    borderTopRightRadius: BorderRadius.xl,
+    maxHeight: '70%',
+  },
+  webDatePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+  },
+  webDatePickerTitle: {
+    fontWeight: Typography.fontWeight.bold,
+  },
+  webDatePickerScroll: {
+    padding: Spacing.md,
+  },
+  webDateItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.sm,
+    borderWidth: 2,
+  },
+  webDateText: {
+    flex: 1,
+  },
+  webDateSubtext: {
+    marginLeft: Spacing.sm,
   },
 });
