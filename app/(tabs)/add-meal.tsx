@@ -61,6 +61,7 @@ export default function AddMealScreen() {
   const [searchResults, setSearchResults] = useState<FoodDatabaseItem[]>([]);
   const [selectedFood, setSelectedFood] = useState<FoodDatabaseItem | null>(null);
   const [selectedPortion, setSelectedPortion] = useState<number>(100);
+  const [fullscreenPhoto, setFullscreenPhoto] = useState<string | null>(null);
 
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -289,7 +290,9 @@ export default function AddMealScreen() {
           </View>
           {photoUri && (
             <View style={styles.photoPreview}>
-              <Image source={{ uri: photoUri }} style={styles.photo} />
+              <TouchableOpacity onPress={() => setFullscreenPhoto(photoUri)} activeOpacity={0.9}>
+                <Image source={{ uri: photoUri }} style={styles.photo} />
+              </TouchableOpacity>
               <TouchableOpacity
                 style={styles.removePhoto}
                 onPress={() => setPhotoUri(undefined)}
@@ -303,13 +306,13 @@ export default function AddMealScreen() {
         {/* Add Food - Quick Search */}
         <View style={styles.section}>
           <TouchableOpacity
-            style={styles.searchFoodButton}
+            style={[styles.searchFoodButton, { backgroundColor: colors.primary }]}
             onPress={() => setShowFoodSearch(true)}
           >
             <Ionicons name="search" size={24} color={colors.background} />
             <View style={styles.searchFoodContent}>
-              <Text style={[styles.searchFoodTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Search Food Database</Text>
-              <Text style={[styles.searchFoodSubtitle, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Quickly add common foods</Text>
+              <Text style={[styles.searchFoodTitle, { color: colors.background, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Search Food Database</Text>
+              <Text style={[styles.searchFoodSubtitle, { color: colors.background, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Quickly add common foods</Text>
             </View>
             <Ionicons name="chevron-forward" size={24} color={colors.background} />
           </TouchableOpacity>
@@ -600,6 +603,26 @@ export default function AddMealScreen() {
               )}
               style={styles.searchResults}
             />
+          )}
+        </View>
+      </Modal>
+
+      {/* Fullscreen Photo Modal */}
+      <Modal
+        visible={fullscreenPhoto !== null}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setFullscreenPhoto(null)}
+      >
+        <View style={styles.fullscreenContainer}>
+          <TouchableOpacity
+            style={styles.fullscreenClose}
+            onPress={() => setFullscreenPhoto(null)}
+          >
+            <Ionicons name="close-circle" size={40} color={colors.background} />
+          </TouchableOpacity>
+          {fullscreenPhoto && (
+            <Image source={{ uri: fullscreenPhoto }} style={styles.fullscreenImage} resizeMode="contain" />
           )}
         </View>
       </Modal>
@@ -929,5 +952,21 @@ const styles = StyleSheet.create({
   portionButtonSize: {
     color: "#FFFFFF",
     opacity: 0.9,
+  },
+  fullscreenContainer: {
+    flex: 1,
+    backgroundColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullscreenImage: {
+    width: '100%',
+    height: '100%',
+  },
+  fullscreenClose: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 1,
   },
 });

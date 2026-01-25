@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Modal } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Spacing, BorderRadius, Typography } from '../theme';
 import { useTheme } from '../contexts/ThemeContext';
 import { Meal } from '../models';
@@ -14,6 +15,7 @@ interface MealCardProps {
 }
 
 export const MealCard: React.FC<MealCardProps> = ({ meal, onPress, onDelete }) => {
+  const [fullscreenPhoto, setFullscreenPhoto] = useState<string | null>(null);
   const { colors, fontScale } = useTheme();
   const mealType = MEAL_TYPES.find((t) => t.value === meal.type);
 
@@ -29,7 +31,9 @@ export const MealCard: React.FC<MealCardProps> = ({ meal, onPress, onDelete }) =
         </View>
 
         {meal.photoUri && (
-          <Image source={{ uri: meal.photoUri }} style={styles.photo} />
+          <TouchableOpacity onPress={() => setFullscreenPhoto(meal.photoUri!)} activeOpacity={0.9}>
+            <Image source={{ uri: meal.photoUri }} style={styles.photo} />
+          </TouchableOpacity>
         )}
 
         <View style={styles.nutrition}>
@@ -72,6 +76,26 @@ export const MealCard: React.FC<MealCardProps> = ({ meal, onPress, onDelete }) =
           <Text style={[styles.deleteIcon, { color: colors.background }]}>✕</Text>
         </TouchableOpacity>
       )}
+
+      {/* Fullscreen Photo Modal */}
+      <Modal
+        visible={fullscreenPhoto !== null}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setFullscreenPhoto(null)}
+      >
+        <View style={styles.fullscreenContainer}>
+          <TouchableOpacity
+            style={styles.fullscreenClose}
+            onPress={() => setFullscreenPhoto(null)}
+          >
+            <Ionicons name="close-circle" size={40} color="#FFFFFF" />
+          </TouchableOpacity>
+          {fullscreenPhoto && (
+            <Image source={{ uri: fullscreenPhoto }} style={styles.fullscreenImage} resizeMode="contain" />
+          )}
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -141,5 +165,21 @@ const styles = StyleSheet.create({
   deleteIcon: {
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  fullscreenContainer: {
+    flex: 1,
+    backgroundColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullscreenImage: {
+    width: '100%',
+    height: '100%',
+  },
+  fullscreenClose: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 1,
   },
 });
