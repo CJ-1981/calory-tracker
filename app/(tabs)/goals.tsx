@@ -431,25 +431,28 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: Spacing.xs,
   },
   goalInput: {
     flex: 1,
     backgroundColor: "transparent",
     borderRadius: BorderRadius.md,
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.sm,
     fontWeight: Typography.fontWeight.bold,
     color: "#333333",
     borderWidth: 1,
     borderColor: "#E0E0E0",
+    minWidth: 0,
   },
   goalUnit: {
     color: "#666666",
-    marginLeft: Spacing.sm,
+    marginLeft: Spacing.xs,
+    flexShrink: 0,
   },
   quickButtonsRow: {
     flexDirection: 'row',
-    gap: Spacing.sm,
+    gap: Spacing.xs,
     marginTop: Spacing.sm,
   },
   quickButton: {
@@ -458,7 +461,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.sm,
+    paddingHorizontal: Spacing.xs,
     borderRadius: BorderRadius.md,
   },
   quickButtonText: {
