@@ -56,7 +56,16 @@ export const MealCard: React.FC<MealCardProps> = ({ meal, onPress, onDelete }) =
 
       {onDelete && (
         <TouchableOpacity
-          onPress={onDelete}
+          onPress={() => {
+            console.log('[MealCard] Delete button pressed for meal:', meal.id);
+            console.log('[MealCard] Meal type:', meal.type);
+            if (onDelete) {
+              console.log('[MealCard] Calling onDelete callback');
+              onDelete();
+            } else {
+              console.log('[MealCard] ERROR: onDelete is undefined!');
+            }
+          }}
           style={[styles.deleteButton, { backgroundColor: colors.danger }]}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >

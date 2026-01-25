@@ -5,8 +5,8 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
+import { Alert } from '../../src/utils/alert';
 import { useSelector, useDispatch } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -28,6 +28,10 @@ export default function HistoryScreen() {
   const [selectedDate, setSelectedDate] = useState<string>(formatDate(new Date()));
 
   const handleDeleteMeal = (meal: Meal) => {
+    console.log('[HistoryScreen] handleDeleteMeal called for meal:', meal);
+    console.log('[HistoryScreen] Meal ID:', meal.id);
+    console.log('[HistoryScreen] Meal type:', meal.type);
+
     Alert.alert(
       'Delete Meal',
       `Are you sure you want to delete this ${meal.type}?`,
@@ -37,10 +41,14 @@ export default function HistoryScreen() {
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
+            console.log('[HistoryScreen] User confirmed delete for meal:', meal.id);
             try {
-              await dispatch(deleteMeal(meal.id));
+              console.log('[HistoryScreen] Dispatching deleteMeal action...');
+              const result = await dispatch(deleteMeal(meal.id));
+              console.log('[HistoryScreen] DeleteMeal result:', result);
               Alert.alert('Success', 'Meal deleted successfully!');
             } catch (error) {
+              console.error('[HistoryScreen] Delete error:', error);
               Alert.alert('Error', 'Failed to delete meal. Please try again.');
             }
           },
@@ -53,6 +61,11 @@ export default function HistoryScreen() {
 
   const selectedDateMeals = meals.filter((meal: Meal) => meal && meal.date === selectedDate);
   const dailyTotals = calculateDailyTotals(selectedDateMeals);
+
+  console.log('[HistoryScreen] Rendering with selectedDate:', selectedDate);
+  console.log('[HistoryScreen] Total meals:', meals.length);
+  console.log('[HistoryScreen] Meals for selected date:', selectedDateMeals.length);
+  console.log('[HistoryScreen] Selected meals:', selectedDateMeals);
 
   const weeklyData = useMemo(() => {
     return last7Days.map((date) => {
@@ -166,7 +179,10 @@ export default function HistoryScreen() {
                 key={meal.id}
                 meal={meal}
                 onPress={() => {}}
-                onDelete={() => handleDeleteMeal(meal)}
+                onDelete={() => {
+                  console.log('[HistoryScreen] Creating onDelete handler for meal:', meal.id);
+                  handleDeleteMeal(meal);
+                }}
               />
             ))
           )}
