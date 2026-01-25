@@ -1,50 +1,181 @@
-# Welcome to your Expo app 👋
+# Calorie Tracker 🍎
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A comprehensive calorie and nutrition tracking app built with React Native and Expo. Track your daily food intake, monitor sugar consumption, set goals, and maintain a healthy lifestyle.
 
-## Get started
+## Features ✨
 
-1. Install dependencies
+### 📊 Dashboard
+- **Daily Summary**: View today's total calories, sugar, protein, carbs, and fat
+- **Progress Tracking**: Visual progress bars towards your daily calorie and sugar goals
+- **Goal Alerts**: Get warnings when approaching or exceeding your daily limits
+- **Sugar Monitoring**: Special focus on sugar intake with color-coded progress indicators
 
-   ```bash
-   npm install
-   ```
+### 🍽️ Meal Logging
+- **Food Database**: Quick access to 80+ common foods with nutritional information
+- **Manual Entry**: Add custom foods with complete nutritional details
+- **Photo Support**: Attach photos to your meals for visual tracking
+- **Multiple Meal Types**: Log breakfast, lunch, dinner, and snacks
+- **Past Date Logging**: Add meals for any past date with calendar picker
+- **Portion Selection**: Choose from common portions or enter custom quantities
 
-2. Start the app
+### 📅 History & Analytics
+- **7-Day Overview**: Visual summary of the last 7 days with calorie bars
+- **Daily Breakdown**: Detailed nutritional breakdown for any selected day
+- **Meal Cards**: View all meals with photos, nutritional info, and timestamps
+- **Delete Meals**: Remove mistakenly logged meals with confirmation
 
-   ```bash
-   npx expo start
-   ```
+### 🎯 Goal Setting
+- **Calorie Targets**: Set daily calorie goals
+- **Sugar Limits**: Define maximum daily sugar intake
+- **Progress Tracking**: Monitor your progress towards goals
+- **Visual Indicators**: Color-coded progress (green → yellow → red)
 
-In the output, you'll find options to open the app in a
+### ⚙️ Accessibility
+- **Dark Mode**: Choose between Light, Dark, or System theme
+- **Font Scaling**: Adjust text size (Small, Medium, Large, Extra Large)
+- **High Contrast**: Improved readability with adjustable themes
+- **Persistent Settings**: Your preferences are saved automatically
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### 🎨 User Interface
+- **Clean Design**: Modern, intuitive interface
+- **Visual Feedback**: Color-coded progress indicators
+- **Responsive**: Works on mobile, tablet, and web
+- **Theme Support**: Full dark mode support across all screens
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Getting Started 🚀
 
-## Get a fresh project
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
+- Expo CLI
 
-When you're ready, run:
+### Installation
 
+1. Clone the repository
 ```bash
-npm run reset-project
+git clone https://github.com/CJ-1981/calory-tracker.git
+cd calory-tracker
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Install dependencies
+```bash
+npm install
+```
 
-## Learn more
+3. Start the development server
+```bash
+npx expo start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+4. Run on your preferred platform
+- Press `a` for Android emulator
+- Press `i` for iOS simulator
+- Press `w` for web browser
+- Scan QR code for Expo Go app on mobile
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Tech Stack 🛠️
 
-## Join the community
+- **Framework**: React Native with Expo
+- **Navigation**: Expo Router (file-based routing)
+- **State Management**: Redux Toolkit
+- **Storage**: AsyncStorage for data persistence
+- **Styling**: React Native StyleSheet with theme support
+- **Icons**: Expo Vector Icons (Ionicons)
+- **Image Picker**: expo-image-picker
+- **Date Picker**: @react-native-community/datetimepicker
 
-Join our community of developers creating universal apps.
+## Project Structure 📁
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```
+calory-tracker/
+├── app/                    # Expo Router pages
+│   ├── (tabs)/            # Tab navigation screens
+│   │   ├── index.tsx      # Dashboard
+│   │   ├── history.tsx    # History & analytics
+│   │   ├── add-meal.tsx   # Add meal screen
+│   │   └── goals.tsx      # Goal settings
+│   └── _layout.tsx        # Root layout with theme provider
+├── src/
+│   ├── components/        # Reusable components
+│   ├── contexts/          # React contexts (Theme)
+│   ├── models/            # TypeScript interfaces
+│   ├── store/             # Redux store & slices
+│   ├── theme/             # Theme configuration
+│   └── utils/             # Helper functions
+└── assets/                # Images, fonts, etc.
+```
+
+## Key Features Explained 💡
+
+### Dark Mode & Accessibility
+- Toggle between Light, Dark, and System themes
+- Adjust font size across 4 levels (Small to Extra Large)
+- All screens support both themes seamlessly
+- Settings persist across app restarts
+
+### Food Database
+- 80+ pre-loaded foods with accurate nutritional data
+- Categories: Fruits, Vegetables, Proteins, Grains, Dairy, Snacks, Beverages, Desserts
+- Common portions for easy selection (e.g., "1 cup", "1 slice", "100g")
+- Search and filter by category
+
+### Photo Support
+- Take photos directly or choose from gallery
+- Fullscreen viewing by tapping on meal photos
+- Photos persist with meal data
+- Remove photos easily with X button
+
+### Date Picker
+- Log meals for any date (not just today)
+- Mobile: Native iOS/Android calendar picker
+- Web: Custom modal with last 30 days
+- Visual date formatting (e.g., "Sat, Jan 25, 2026")
+
+### Delete Functionality
+- Delete meals from Dashboard or History screens
+- Confirmation dialog to prevent accidental deletions
+- Works on web and mobile platforms
+
+## Data Persistence 💾
+
+- **AsyncStorage**: All data stored locally on device
+- **Meals**: Complete meal history with photos
+- **Goals**: Your calorie and sugar targets
+- **Settings**: Theme and font size preferences
+- **Offline**: Works without internet connection
+
+## Deployment 🌐
+
+### Vercel (Web)
+The app is automatically deployed to Vercel on push to main branch:
+- Live: https://calory-tracker-phi.vercel.app/
+
+### Mobile (iOS/Android)
+To build standalone apps:
+```bash
+# iOS
+eas build --platform ios
+
+# Android
+eas build --platform android
+```
+
+## Contributing 🤝
+
+Contributions are welcome! Please feel free to submit issues or pull requests.
+
+## License 📄
+
+MIT License - feel free to use this project for personal or commercial purposes.
+
+## Acknowledgments 🙏
+
+Built with:
+- [Expo](https://expo.dev/)
+- [React Native](https://reactnative.dev/)
+- [Redux Toolkit](https://redux-toolkit.js.org/)
+- [Expo Router](https://docs.expo.dev/router/)
+
+---
+
+**Note**: This app is designed for personal tracking and educational purposes. Always consult healthcare professionals for medical advice regarding nutrition and diet.
