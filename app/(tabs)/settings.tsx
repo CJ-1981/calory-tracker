@@ -165,7 +165,10 @@ export default function SettingsScreen() {
           <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>About</Text>
           <View style={[styles.infoCard, { backgroundColor: colors.surface }]}>
             <Text style={[styles.appName, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Calorie & Sugar Tracker</Text>
-            <Text style={[styles.version, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Version 1.0.0</Text>
+            <Text style={[styles.version, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Version 1.1.0</Text>
+            <Text style={[styles.version, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>
+              Added meal presets feature
+            </Text>
           </View>
         </View>
 
