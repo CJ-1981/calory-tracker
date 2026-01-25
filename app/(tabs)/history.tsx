@@ -18,7 +18,6 @@ import { Meal } from '../../src/models';
 import { formatDate, getLast7Days, getDayName, formatDisplayDate } from '../../src/utils/dateUtils';
 import { calculateDailyTotals } from '../../src/utils/calculator';
 import { deleteMeal } from '../../src/store/mealSlice';
-import { Alert as AppAlert } from '../../src/utils/alert';
 import { scaledFontSize } from '../../src/utils/fontUtils';
 
 export default function HistoryScreen() {
@@ -40,9 +39,9 @@ export default function HistoryScreen() {
           onPress: async () => {
             try {
               await dispatch(deleteMeal(meal.id));
-              AppAlert.alert('Success', 'Meal deleted successfully!');
+              Alert.alert('Success', 'Meal deleted successfully!');
             } catch (error) {
-              AppAlert.alert('Error', 'Failed to delete meal. Please try again.');
+              Alert.alert('Error', 'Failed to delete meal. Please try again.');
             }
           },
         },

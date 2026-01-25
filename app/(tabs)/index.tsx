@@ -23,7 +23,6 @@ import { checkGoalProgress, checkSugarWarnings, calculateDailySummary } from '..
 import { Meal, DailyLog } from '../../src/models';
 import { scaledFontSize } from '../../src/utils/fontUtils';
 import { deleteMeal } from '../../src/store/mealSlice';
-import { Alert as AppAlert } from '../../src/utils/alert';
 
 export default function DashboardScreen() {
   const router = useRouter();
@@ -47,9 +46,9 @@ export default function DashboardScreen() {
           onPress: async () => {
             try {
               await dispatch(deleteMeal(meal.id));
-              AppAlert.alert('Success', 'Meal deleted successfully!');
+              Alert.alert('Success', 'Meal deleted successfully!');
             } catch (error) {
-              AppAlert.alert('Error', 'Failed to delete meal. Please try again.');
+              Alert.alert('Error', 'Failed to delete meal. Please try again.');
             }
           },
         },
