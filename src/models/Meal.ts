@@ -39,3 +39,11 @@ export interface DailyLog {
   totalCarbs: number;
   totalFat: number;
 }
+
+export interface MealPreset {
+  id: string;
+  name: string;
+  foods: FoodItem[];
+  createdAt: string;
+  mealType?: MealType;
+}

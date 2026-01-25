@@ -20,7 +20,7 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 import { Spacing, BorderRadius, Typography } from '../../src/theme';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { MealType, FoodItem, Meal } from '../../src/models';
-import { addMeal } from '../../src/store';
+import { addMeal, loadPresets, savePreset, deletePreset } from '../../src/store';
 import { calculateMealTotals, calculateNutrition } from '../../src/utils/calculator';
 import { MEAL_TYPES } from '../../src/utils/constants';
 import { AppDispatch } from '../../src/store';
@@ -34,12 +34,20 @@ import {
 } from '../../src/utils/foodDatabase';
 import { Alert } from '../../src/utils/alert';
 import { scaledFontSize } from '../../src/utils/fontUtils';
+import { MealPreset } from '../../src/models/Meal';
+import { useEffect } from 'react';
 
 export default function AddMealScreen() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const { colors, fontScale } = useTheme();
   const meals = useSelector((state: RootState) => state.meals.meals) || [];
+  const presets = useSelector((state: RootState) => state.presets.presets) || [];
+
+  // Load presets on mount
+  useEffect(() => {
+    dispatch(loadPresets());
+  }, []);
 
   const [mealType, setMealType] = useState<MealType>('breakfast');
   const [mealDate, setMealDate] = useState(new Date().toISOString().split('T')[0]);
@@ -67,6 +75,11 @@ export default function AddMealScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showWebDatePicker, setShowWebDatePicker] = useState(false);
   const [tempDate, setTempDate] = useState(mealDate);
+
+  // Preset modal state
+  const [showPresetModal, setShowPresetModal] = useState(false);
+  const [showSavePresetDialog, setShowSavePresetDialog] = useState(false);
+  const [presetName, setPresetName] = useState('');
 
   const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     if (Platform.OS === 'android') {
@@ -286,6 +299,71 @@ export default function AddMealScreen() {
     }
   };
 
+  const handleSavePreset = async () => {
+    if (!presetName.trim()) {
+      Alert.alert('Name Required', 'Please enter a name for this preset.');
+      return;
+    }
+
+    if (currentFoods.length === 0) {
+      Alert.alert('No Foods', 'Please add at least one food item to save as a preset.');
+      return;
+    }
+
+    try {
+      await dispatch(savePreset({
+        name: presetName.trim(),
+        foods: currentFoods,
+        mealType: mealType,
+      }));
+      Alert.alert('Success', 'Preset saved successfully!');
+      setShowSavePresetDialog(false);
+      setPresetName('');
+    } catch (error) {
+      console.error('Error saving preset:', error);
+      Alert.alert('Error', 'Failed to save preset. Please try again.');
+    }
+  };
+
+  const handleLoadPreset = (preset: MealPreset) => {
+    // Generate new food IDs for the loaded foods
+    const foodsWithNewIds = preset.foods.map(food => ({
+      ...food,
+      foodId: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+    }));
+
+    setCurrentFoods([...currentFoods, ...foodsWithNewIds]);
+    setShowPresetModal(false);
+    Alert.alert('Loaded!', `Added ${preset.foods.length} foods from "${preset.name}"`);
+  };
+
+  const handleDeletePreset = async (presetId: string) => {
+    Alert.alert(
+      'Delete Preset',
+      'Are you sure you want to delete this preset?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await dispatch(deletePreset(presetId));
+              Alert.alert('Success', 'Preset deleted successfully!');
+            } catch (error) {
+              console.error('Error deleting preset:', error);
+              Alert.alert('Error', 'Failed to delete preset. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const calculatePresetTotals = (foods: FoodItem[]) => {
+    return calculateMealTotals(foods);
+  };
+
   const mealTotals = calculateMealTotals(currentFoods);
   const selectedMealType = MEAL_TYPES.find((t) => t.value === mealType);
 
@@ -396,6 +474,39 @@ export default function AddMealScreen() {
             </View>
             <Ionicons name="chevron-forward" size={24} color={colors.background} />
           </TouchableOpacity>
+        </View>
+
+        {/* Preset Buttons */}
+        <View style={styles.section}>
+          <View style={styles.presetButtonsRow}>
+            <TouchableOpacity
+              style={[styles.presetButton, { backgroundColor: colors.surface }]}
+              onPress={() => setShowPresetModal(true)}
+            >
+              <Ionicons name="bookmark-outline" size={24} color={colors.primary} />
+              <View style={styles.presetButtonContent}>
+                <Text style={[styles.presetButtonText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Load Preset</Text>
+                <Text style={[styles.presetButtonSubtext, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+                  {presets.length} saved
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            {currentFoods.length > 0 && (
+              <TouchableOpacity
+                style={[styles.presetButton, { backgroundColor: colors.surface }]}
+                onPress={() => setShowSavePresetDialog(true)}
+              >
+                <Ionicons name="save-outline" size={24} color={colors.primary} />
+                <View style={styles.presetButtonContent}>
+                  <Text style={[styles.presetButtonText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Save as Preset</Text>
+                  <Text style={[styles.presetButtonSubtext, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+                    Save current meal
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         {/* Manual Entry */}
@@ -762,6 +873,119 @@ export default function AddMealScreen() {
           </View>
         </Modal>
       )}
+
+      {/* Save Preset Dialog */}
+      <Modal
+        visible={showSavePresetDialog}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowSavePresetDialog(false)}
+      >
+        <View style={styles.dialogOverlay}>
+          <View style={[styles.dialogContent, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.dialogTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Save as Preset</Text>
+            <Text style={[styles.dialogSubtitle, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+              Give this meal combination a name to save it as a preset for quick access later.
+            </Text>
+
+            <TextInput
+              style={[styles.dialogInput, { borderColor: colors.border, color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}
+              value={presetName}
+              onChangeText={setPresetName}
+              placeholder="e.g., My Favorite Breakfast"
+              placeholderTextColor={colors.textSecondary}
+              autoFocus
+            />
+
+            <View style={styles.dialogButtons}>
+              <TouchableOpacity
+                style={[styles.dialogButton, styles.dialogButtonCancel, { borderColor: colors.border }]}
+                onPress={() => {
+                  setShowSavePresetDialog(false);
+                  setPresetName('');
+                }}
+              >
+                <Text style={[styles.dialogButtonText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.dialogButton, styles.dialogButtonSave, { backgroundColor: colors.primary }]}
+                onPress={handleSavePreset}
+              >
+                <Text style={[styles.dialogButtonText, styles.dialogButtonTextSave, { color: colors.background, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Load Preset Modal */}
+      <Modal
+        visible={showPresetModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowPresetModal(false)}
+      >
+        <View style={[styles.modalContainer, { backgroundColor: colors.background }]}>
+          <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+            <TouchableOpacity onPress={() => setShowPresetModal(false)}>
+              <Text style={[styles.modalCancel, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Cancel</Text>
+            </TouchableOpacity>
+            <Text style={[styles.modalTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Saved Presets</Text>
+            <View style={{ width: 50 }} />
+          </View>
+
+          {presets.length === 0 ? (
+            <View style={styles.emptyPresetState}>
+              <Ionicons name="bookmark-outline" size={64} color={colors.textSecondary} />
+              <Text style={[styles.emptyPresetTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>No Saved Presets</Text>
+              <Text style={[styles.emptyPresetText, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+                Save your favorite meal combinations as presets to quickly add them later.
+              </Text>
+            </View>
+          ) : (
+            <FlatList
+              data={presets}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => {
+                const totals = calculatePresetTotals(item.foods);
+                return (
+                  <View style={[styles.presetItem, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+                    <View style={styles.presetItemContent}>
+                      <View style={styles.presetItemHeader}>
+                        <Text style={[styles.presetName, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{item.name}</Text>
+                        {item.mealType && (
+                          <Text style={[styles.presetMealType, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+                            {MEAL_TYPES.find(t => t.value === item.mealType)?.label}
+                          </Text>
+                        )}
+                      </View>
+                      <Text style={[styles.presetDetails, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+                        {item.foods.length} food{item.foods.length !== 1 ? 's' : ''} • {totals.totalCalories} cal • {totals.totalSugar.toFixed(1)}g sugar
+                      </Text>
+                    </View>
+                    <View style={styles.presetActions}>
+                      <TouchableOpacity
+                        style={[styles.presetActionButton, styles.presetLoadButton, { backgroundColor: colors.primary }]}
+                        onPress={() => handleLoadPreset(item)}
+                      >
+                        <Ionicons name="add" size={20} color={colors.background} />
+                        <Text style={[styles.presetActionText, { color: colors.background, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Load</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.presetActionButton, styles.presetDeleteButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                        onPress={() => handleDeletePreset(item.id)}
+                      >
+                        <Ionicons name="trash-outline" size={20} color={colors.danger} />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                );
+              }}
+              style={styles.presetsList}
+            />
+          )}
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -1171,5 +1395,143 @@ const styles = StyleSheet.create({
   },
   webDateSubtext: {
     marginLeft: Spacing.sm,
+  },
+  // Preset buttons
+  presetButtonsRow: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  presetButton: {
+    flex: 1,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  presetButtonContent: {
+    flex: 1,
+    marginLeft: Spacing.md,
+  },
+  presetButtonText: {
+    fontWeight: Typography.fontWeight.semibold,
+  },
+  presetButtonSubtext: {
+    marginTop: 2,
+  },
+  // Preset modal
+  presetsList: {
+    flex: 1,
+  },
+  presetItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.md,
+    borderBottomWidth: 1,
+  },
+  presetItemContent: {
+    flex: 1,
+  },
+  presetItemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  presetName: {
+    fontWeight: '600',
+  },
+  presetMealType: {
+    fontWeight: '500',
+  },
+  presetDetails: {
+    marginTop: Spacing.xs,
+  },
+  presetActions: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  presetActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    gap: Spacing.xs,
+  },
+  presetLoadButton: {
+    backgroundColor: "transparent",
+  },
+  presetDeleteButton: {
+    borderWidth: 1,
+  },
+  presetActionText: {
+    fontWeight: '600',
+  },
+  emptyPresetState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.xxl,
+  },
+  emptyPresetTitle: {
+    fontWeight: '600',
+    marginTop: Spacing.md,
+  },
+  emptyPresetText: {
+    marginTop: Spacing.xs,
+    textAlign: 'center',
+  },
+  // Dialog styles
+  dialogOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.lg,
+  },
+  dialogContent: {
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.xl,
+    width: '100%',
+    maxWidth: 400,
+  },
+  dialogTitle: {
+    fontWeight: Typography.fontWeight.bold,
+    marginBottom: Spacing.sm,
+  },
+  dialogSubtitle: {
+    marginBottom: Spacing.lg,
+  },
+  dialogInput: {
+    borderWidth: 1,
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  dialogButtons: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  dialogButton: {
+    flex: 1,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+  },
+  dialogButtonCancel: {
+    borderWidth: 1,
+  },
+  dialogButtonSave: {
+    backgroundColor: "transparent",
+  },
+  dialogButtonText: {
+    fontWeight: '600',
+  },
+  dialogButtonTextSave: {
+    color: "#FFFFFF",
   },
 });
