@@ -16,6 +16,7 @@ import { useTheme } from '../../src/contexts/ThemeContext';
 import { ProgressBar } from '../../src/components/ProgressBar';
 import { SugarAlert } from '../../src/components/SugarAlert';
 import { MealCard } from '../../src/components/MealCard';
+import { TrendChart } from '../../src/components/TrendChart';
 import { RootState, AppDispatch } from '../../src/store';
 import { selectTodayMeals } from '../../src/store/mealSlice';
 import { calculateDailyTotals } from '../../src/utils/calculator';
@@ -23,6 +24,7 @@ import { checkGoalProgress, checkSugarWarnings, calculateDailySummary } from '..
 import { Meal, DailyLog } from '../../src/models';
 import { scaledFontSize } from '../../src/utils/fontUtils';
 import { deleteMeal } from '../../src/store/mealSlice';
+import { formatDate, getLast7Days, getDayName } from '../../src/utils/dateUtils';
 
 export default function DashboardScreen() {
   const router = useRouter();
@@ -30,9 +32,16 @@ export default function DashboardScreen() {
   const { colors, fontScale } = useTheme();
   const todayMeals = useSelector((state: RootState) => selectTodayMeals(state)) || [];
   const activeGoal = useSelector((state: RootState) => state.goals.activeGoal);
+  const allMeals = useSelector((state: RootState) => state.meals.meals) || [];
 
   const [dailyLog, setDailyLog] = useState<DailyLog | null>(null);
   const [warnings, setWarnings] = useState<any[]>([]);
+  const [weeklyData, setWeeklyData] = useState<{
+    date: string;
+    dayName: string;
+    calories: number;
+    sugar: number;
+  }[]>([]);
 
   const handleDeleteMeal = (meal: Meal) => {
     Alert.alert(
@@ -71,6 +80,23 @@ export default function DashboardScreen() {
     loadData();
   }, [todayMeals, activeGoal]);
 
+  useEffect(() => {
+    // Calculate weekly data for charts
+    const last7Days = getLast7Days();
+    const data = last7Days.map((date) => {
+      const dateStr = formatDate(date);
+      const dayMeals = allMeals.filter((meal: Meal) => meal && meal.date === dateStr);
+      const totals = calculateDailyTotals(dayMeals);
+      return {
+        date: dateStr,
+        dayName: getDayName(date),
+        calories: totals.totalCalories,
+        sugar: totals.totalSugar,
+      };
+    });
+    setWeeklyData(data);
+  }, [allMeals]);
+
   const calorieProgress = activeGoal
     ? checkGoalProgress(dailyLog?.totalCalories || 0, activeGoal.calorieTarget)
     : null;
@@ -91,6 +117,19 @@ export default function DashboardScreen() {
         return colors.success;
     }
   };
+
+  // Prepare chart data
+  const caloriesChartData = weeklyData.map((day) => ({
+    value: day.calories,
+    label: day.dayName,
+    date: day.date,
+  }));
+
+  const sugarChartData = weeklyData.map((day) => ({
+    value: day.sugar,
+    label: day.dayName,
+    date: day.date,
+  }));
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -181,6 +220,29 @@ export default function DashboardScreen() {
             </View>
           </View>
         )}
+
+        {/* Daily Trends */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Daily Trends</Text>
+
+          <TrendChart
+            data={caloriesChartData}
+            goalValue={activeGoal?.calorieTarget}
+            color={colors.primary}
+            title="Calories (7 days)"
+            unit="cal"
+            height={200}
+          />
+
+          <TrendChart
+            data={sugarChartData}
+            goalValue={activeGoal?.sugarTarget}
+            color={colors.secondary}
+            title="Sugar (7 days)"
+            unit="g"
+            height={200}
+          />
+        </View>
 
         {/* Today's Meals */}
         <View style={styles.section}>
