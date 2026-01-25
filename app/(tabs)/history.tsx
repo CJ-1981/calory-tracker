@@ -5,24 +5,50 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Spacing, BorderRadius, Typography } from '../../src/theme';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { MealCard } from '../../src/components/MealCard';
-import { RootState } from '../../src/store';
+import { RootState, AppDispatch } from '../../src/store';
 import { Meal } from '../../src/models';
 import { formatDate, getLast7Days, getDayName, formatDisplayDate } from '../../src/utils/dateUtils';
 import { calculateDailyTotals } from '../../src/utils/calculator';
+import { deleteMeal } from '../../src/store/mealSlice';
+import { Alert as AppAlert } from '../../src/utils/alert';
 import { scaledFontSize } from '../../src/utils/fontUtils';
 
 export default function HistoryScreen() {
   const { colors, fontScale } = useTheme();
+  const dispatch = useDispatch<AppDispatch>();
   const meals = useSelector((state: RootState) => state.meals.meals) || [];
   const activeGoal = useSelector((state: RootState) => state.goals.activeGoal);
   const [selectedDate, setSelectedDate] = useState<string>(formatDate(new Date()));
+
+  const handleDeleteMeal = (meal: Meal) => {
+    Alert.alert(
+      'Delete Meal',
+      `Are you sure you want to delete this ${meal.type}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await dispatch(deleteMeal(meal.id));
+              AppAlert.alert('Success', 'Meal deleted successfully!');
+            } catch (error) {
+              AppAlert.alert('Error', 'Failed to delete meal. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const last7Days = getLast7Days();
 
@@ -141,6 +167,7 @@ export default function HistoryScreen() {
                 key={meal.id}
                 meal={meal}
                 onPress={() => {}}
+                onDelete={() => handleDeleteMeal(meal)}
               />
             ))
           )}
@@ -150,24 +177,24 @@ export default function HistoryScreen() {
         {selectedDateMeals.length > 0 && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Daily Breakdown</Text>
-            <View style={styles.breakdownCard}>
-              <View style={styles.breakdownRow}>
+            <View style={[styles.breakdownCard, { backgroundColor: colors.surface }]}>
+              <View style={[styles.breakdownRow, { borderBottomColor: colors.border }]}>
                 <Text style={[styles.breakdownLabel, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Total Calories</Text>
                 <Text style={[styles.breakdownValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{dailyTotals.totalCalories} cal</Text>
               </View>
-              <View style={styles.breakdownRow}>
+              <View style={[styles.breakdownRow, { borderBottomColor: colors.border }]}>
                 <Text style={[styles.breakdownLabel, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Total Sugar</Text>
                 <Text style={[styles.breakdownValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{dailyTotals.totalSugar.toFixed(1)}g</Text>
               </View>
-              <View style={styles.breakdownRow}>
+              <View style={[styles.breakdownRow, { borderBottomColor: colors.border }]}>
                 <Text style={[styles.breakdownLabel, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Protein</Text>
                 <Text style={[styles.breakdownValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{dailyTotals.totalProtein.toFixed(1)}g</Text>
               </View>
-              <View style={styles.breakdownRow}>
+              <View style={[styles.breakdownRow, { borderBottomColor: colors.border }]}>
                 <Text style={[styles.breakdownLabel, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Carbs</Text>
                 <Text style={[styles.breakdownValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{dailyTotals.totalCarbs.toFixed(1)}g</Text>
               </View>
-              <View style={styles.breakdownRow}>
+              <View style={[styles.breakdownRow, { borderBottomColor: colors.border }]}>
                 <Text style={[styles.breakdownLabel, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Fat</Text>
                 <Text style={[styles.breakdownValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{dailyTotals.totalFat.toFixed(1)}g</Text>
               </View>
@@ -310,7 +337,6 @@ const styles = StyleSheet.create({
     marginTop: Spacing.md,
   },
   breakdownCard: {
-    backgroundColor: "#F5F5F5",
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
   },
@@ -319,13 +345,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: Spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
   },
-  breakdownLabel: {
-    color: "#333333",
-  },
+  breakdownLabel: {},
   breakdownValue: {
     fontWeight: Typography.fontWeight.semibold,
-    color: "#FF6B6B",
   },
 });

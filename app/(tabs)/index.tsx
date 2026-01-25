@@ -22,6 +22,8 @@ import { calculateDailyTotals } from '../../src/utils/calculator';
 import { checkGoalProgress, checkSugarWarnings, calculateDailySummary } from '../../src/services/analyticsService';
 import { Meal, DailyLog } from '../../src/models';
 import { scaledFontSize } from '../../src/utils/fontUtils';
+import { deleteMeal } from '../../src/store/mealSlice';
+import { Alert as AppAlert } from '../../src/utils/alert';
 
 export default function DashboardScreen() {
   const router = useRouter();
@@ -32,6 +34,28 @@ export default function DashboardScreen() {
 
   const [dailyLog, setDailyLog] = useState<DailyLog | null>(null);
   const [warnings, setWarnings] = useState<any[]>([]);
+
+  const handleDeleteMeal = (meal: Meal) => {
+    Alert.alert(
+      'Delete Meal',
+      `Are you sure you want to delete this ${meal.type}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await dispatch(deleteMeal(meal.id));
+              AppAlert.alert('Success', 'Meal deleted successfully!');
+            } catch (error) {
+              AppAlert.alert('Error', 'Failed to delete meal. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -179,6 +203,7 @@ export default function DashboardScreen() {
                 key={meal.id}
                 meal={meal}
                 onPress={() => router.push(`/meal/${meal.id}` as any)}
+                onDelete={() => handleDeleteMeal(meal)}
               />
             ))
           )}
