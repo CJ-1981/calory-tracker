@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,8 +10,9 @@ import {
   Modal,
   FlatList,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useDispatch } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -32,10 +33,10 @@ import {
   FoodDatabaseItem,
   searchFoodDatabase,
 } from '../../src/utils/foodDatabase';
+import { searchUSDAFoods, isUSDAApiConfigured } from '../../src/utils/usdaApi';
 import { Alert } from '../../src/utils/alert';
 import { scaledFontSize } from '../../src/utils/fontUtils';
 import { MealPreset } from '../../src/models/Meal';
-import { useEffect } from 'react';
 
 export default function AddMealScreen() {
   const router = useRouter();
@@ -48,6 +49,18 @@ export default function AddMealScreen() {
   useEffect(() => {
     dispatch(loadPresets());
   }, []);
+
+  // Check if USDA API is configured when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      checkApiConfiguration();
+    }, [])
+  );
+
+  const checkApiConfiguration = async () => {
+    const configured = await isUSDAApiConfigured();
+    setIsApiConfigured(configured);
+  };
 
   const [mealType, setMealType] = useState<MealType>('breakfast');
   const [mealDate, setMealDate] = useState(new Date().toISOString().split('T')[0]);
@@ -67,14 +80,18 @@ export default function AddMealScreen() {
   // Food search modal state
   const [showFoodSearch, setShowFoodSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchResults, setSearchResults] = useState<FoodDatabaseItem[]>([]);
   const [selectedFood, setSelectedFood] = useState<FoodDatabaseItem | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const [selectedPortion, setSelectedPortion] = useState<number>(100);
   const [fullscreenPhoto, setFullscreenPhoto] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showWebDatePicker, setShowWebDatePicker] = useState(false);
   const [tempDate, setTempDate] = useState(mealDate);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [isManualEntryExpanded, setIsManualEntryExpanded] = useState(false);
+  const [isApiConfigured, setIsApiConfigured] = useState(false);
 
   // Preset modal state
   const [showPresetModal, setShowPresetModal] = useState(false);
@@ -249,17 +266,63 @@ export default function AddMealScreen() {
     setCurrentFoods(currentFoods.filter((f) => f.foodId !== foodId));
   };
 
+  const clearAllFoods = () => {
+    Alert.alert(
+      'Clear All Foods',
+      'Are you sure you want to remove all foods from this meal?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear All',
+          style: 'destructive',
+          onPress: () => setCurrentFoods([]),
+        },
+      ]
+    );
+  };
+
   const handleSearch = (text: string) => {
     setSearchQuery(text);
-    if (text.length > 0) {
-      const results = searchFoodDatabase(text);
-      const filtered = selectedCategory === 'All'
-        ? results
-        : results.filter((f) => f.category === selectedCategory);
-      setSearchResults(filtered);
-    } else {
-      setSearchResults([]);
-    }
+  };
+
+  // Debounced search with USDA API
+  useEffect(() => {
+    const searchTimer = setTimeout(async () => {
+      if (searchQuery.length > 0) {
+        setIsSearching(true);
+        setHasSearched(true);
+
+        // Search local database first
+        const localResults = searchFoodDatabase(searchQuery);
+        let allResults: FoodDatabaseItem[] = [...localResults];
+
+        // If USDA API is configured, also search there
+        if (isApiConfigured) {
+          try {
+            const usdaResults = await searchUSDAFoods(searchQuery, 10);
+            // Combine results, prioritizing local database
+            const usdaIds = new Set(usdaResults.map(f => f.id));
+            const filteredLocal = localResults.filter(f => !usdaIds.has(f.id));
+            allResults = [...usdaResults, ...filteredLocal];
+          } catch (error) {
+            console.error('Error searching USDA API:', error);
+          }
+        }
+
+        setSearchResults(allResults);
+        setIsSearching(false);
+      } else {
+        setSearchResults([]);
+        setHasSearched(false);
+        setIsSearching(false);
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(searchTimer);
+  }, [searchQuery, isApiConfigured]);
+
+  const getFoodsByCategory = (category: string): FoodDatabaseItem[] => {
+    return foodDatabase.filter((food) => food.category === category);
   };
 
   const saveMeal = async () => {
@@ -511,110 +574,130 @@ export default function AddMealScreen() {
 
         {/* Manual Entry */}
         <View style={styles.section}>
-          <View style={styles.manualEntryHeader}>
+          <TouchableOpacity
+            style={styles.manualEntryHeader}
+            onPress={() => setIsManualEntryExpanded(!isManualEntryExpanded)}
+          >
             <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Or Enter Manually</Text>
-          </View>
-          <View style={[styles.card, { backgroundColor: colors.surface }]}>
-            <View style={styles.inputGroup}>
-              <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Food Name *</Text>
-              <TextInput
-                style={styles.input}
-                value={foodName}
-                onChangeText={setFoodName}
-                placeholder="e.g., Grilled Chicken"
-              />
-            </View>
+            <Ionicons
+              name={isManualEntryExpanded ? "chevron-up" : "chevron-down"}
+              size={24}
+              color={colors.text}
+            />
+          </TouchableOpacity>
 
-            <View style={styles.row}>
-              <View style={[styles.inputGroup, styles.flex1]}>
-                <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Serving Size</Text>
+          {isManualEntryExpanded && (
+            <View style={[styles.card, { backgroundColor: colors.surface }]}>
+              <View style={styles.inputGroup}>
+                <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Food Name *</Text>
                 <TextInput
                   style={styles.input}
-                  value={servingSize}
-                  onChangeText={setServingSize}
-                  placeholder="100"
-                  keyboardType="numeric"
+                  value={foodName}
+                  onChangeText={setFoodName}
+                  placeholder="e.g., Grilled Chicken"
                 />
               </View>
-              <View style={[styles.inputGroup, styles.flex1]}>
-                <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Unit</Text>
-                <TextInput
-                  style={styles.input}
-                  value={servingUnit}
-                  onChangeText={setServingUnit}
-                  placeholder="g"
-                />
-              </View>
-            </View>
 
-            <View style={styles.row}>
-              <View style={[styles.inputGroup, styles.flex1]}>
-                <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Calories *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={calories}
-                  onChangeText={setCalories}
-                  placeholder="0"
-                  keyboardType="numeric"
-                />
+              <View style={styles.row}>
+                <View style={[styles.inputGroup, styles.flex1]}>
+                  <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Serving Size</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={servingSize}
+                    onChangeText={setServingSize}
+                    placeholder="100"
+                    keyboardType="numeric"
+                  />
+                </View>
+                <View style={[styles.inputGroup, styles.flex1]}>
+                  <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Unit</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={servingUnit}
+                    onChangeText={setServingUnit}
+                    placeholder="g"
+                  />
+                </View>
               </View>
-              <View style={[styles.inputGroup, styles.flex1]}>
-                <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Sugar (g) *</Text>
+
+              <View style={styles.row}>
+                <View style={[styles.inputGroup, styles.flex1]}>
+                  <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Calories *</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={calories}
+                    onChangeText={setCalories}
+                    placeholder="0"
+                    keyboardType="numeric"
+                  />
+                </View>
+                <View style={[styles.inputGroup, styles.flex1]}>
+                  <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Sugar (g) *</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={sugar}
+                    onChangeText={setSugar}
+                    placeholder="0"
+                    keyboardType="decimal-pad"
+                  />
+                </View>
+              </View>
+
+              <View style={styles.row}>
+                <View style={[styles.inputGroup, styles.flex1]}>
+                  <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Protein (g)</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={protein}
+                    onChangeText={setProtein}
+                    placeholder="0"
+                    keyboardType="decimal-pad"
+                  />
+                </View>
+                <View style={[styles.inputGroup, styles.flex1]}>
+                  <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Carbs (g)</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={carbs}
+                    onChangeText={setCarbs}
+                    placeholder="0"
+                    keyboardType="decimal-pad"
+                  />
+                </View>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Fat (g)</Text>
                 <TextInput
                   style={styles.input}
-                  value={sugar}
-                  onChangeText={setSugar}
+                  value={fat}
+                  onChangeText={setFat}
                   placeholder="0"
                   keyboardType="decimal-pad"
                 />
               </View>
-            </View>
 
-            <View style={styles.row}>
-              <View style={[styles.inputGroup, styles.flex1]}>
-                <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Protein (g)</Text>
-                <TextInput
-                  style={styles.input}
-                  value={protein}
-                  onChangeText={setProtein}
-                  placeholder="0"
-                  keyboardType="decimal-pad"
-                />
-              </View>
-              <View style={[styles.inputGroup, styles.flex1]}>
-                <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Carbs (g)</Text>
-                <TextInput
-                  style={styles.input}
-                  value={carbs}
-                  onChangeText={setCarbs}
-                  placeholder="0"
-                  keyboardType="decimal-pad"
-                />
-              </View>
+              <TouchableOpacity style={styles.addButton} onPress={addFoodItem}>
+                <Ionicons name="add" size={20} color={colors.background} />
+                <Text style={[styles.addButtonText, { color: colors.background, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Add to Meal</Text>
+              </TouchableOpacity>
             </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Fat (g)</Text>
-              <TextInput
-                style={styles.input}
-                value={fat}
-                onChangeText={setFat}
-                placeholder="0"
-                keyboardType="decimal-pad"
-              />
-            </View>
-
-            <TouchableOpacity style={styles.addButton} onPress={addFoodItem}>
-              <Ionicons name="add" size={20} color={colors.background} />
-              <Text style={[styles.addButtonText, { color: colors.background, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Add to Meal</Text>
-            </TouchableOpacity>
-          </View>
+          )}
         </View>
 
         {/* Food List */}
         {currentFoods.length > 0 && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Foods in this Meal</Text>
+            <View style={styles.foodListHeader}>
+              <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Foods in this Meal</Text>
+              <TouchableOpacity
+                style={[styles.clearAllButton, { borderColor: colors.border }]}
+                onPress={clearAllFoods}
+              >
+                <Ionicons name="trash-outline" size={16} color={colors.danger} style={{ marginRight: 4 }} />
+                <Text style={[styles.clearAllButtonText, { color: colors.danger, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Clear All</Text>
+              </TouchableOpacity>
+            </View>
             {currentFoods.map((food) => (
               <View key={food.foodId} style={[styles.foodItem, { backgroundColor: colors.surface }]}>
                 <View style={styles.flex1}>
@@ -701,58 +784,102 @@ export default function AddMealScreen() {
                 autoFocus
               />
               {searchQuery.length > 0 && (
-                <TouchableOpacity onPress={() => { setSearchQuery(''); setSearchResults([]); }}>
+                <TouchableOpacity onPress={() => { setSearchQuery(''); setSearchResults([]); setHasSearched(false); }}>
                   <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
                 </TouchableOpacity>
               )}
             </View>
+            {!isApiConfigured && searchQuery.length === 0 && (
+              <View style={[styles.apiWarning, { backgroundColor: 'rgba(255, 165, 0, 0.1)' }]}>
+                <View style={styles.apiWarningContent}>
+                  <Ionicons name="information-circle" size={16} color="orange" style={{ marginRight: 4 }} />
+                  <Text style={[styles.apiWarningText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>
+                    USDA API not configured. Limited to local database.
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={[styles.apiWarningButton, { backgroundColor: colors.primary }]}
+                  onPress={() => {
+                    setShowFoodSearch(false);
+                    setTimeout(() => {
+                      router.push('/(tabs)/settings');
+                    }, 100);
+                  }}
+                >
+                  <Text style={[styles.apiWarningButtonText, { color: colors.background, fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>
+                    Configure
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
 
-          {/* Categories */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.categoriesScroll}
-          >
-            {foodCategories.map((category) => (
-              <TouchableOpacity
-                key={category}
-                style={[
-                  styles.categoryChip,
-                  { backgroundColor: colors.surface },
-                  selectedCategory === category && { backgroundColor: colors.primary },
-                ]}
-                onPress={() => {
-                  setSelectedCategory(category);
-                  if (searchQuery.length > 0) {
-                    const results = searchFoodDatabase(searchQuery);
-                    const filtered = category === 'All'
-                      ? results
-                      : results.filter((f) => f.category === category);
-                    setSearchResults(filtered);
-                  }
-                }}
-              >
-                <Text
-                  style={[
-                    styles.categoryChipText,
-                    { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) },
-                    selectedCategory === category && { color: colors.background },
-                  ]}
-                >
-                  {category}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+          {/* Category Foods Dropdowns - Show when no search query */}
+          {searchQuery.length === 0 && (
+            <ScrollView style={styles.categoriesDropdowns}>
+              {foodCategories.filter(cat => cat !== 'All').map((category) => {
+                const categoryFoods = getFoodsByCategory(category);
+                const isExpanded = expandedCategory === category;
+
+                return (
+                  <View key={category} style={[styles.categoryDropdown, { borderBottomColor: colors.border }]}>
+                    <TouchableOpacity
+                      style={[styles.categoryDropdownHeader, { backgroundColor: colors.surface }]}
+                      onPress={() => setExpandedCategory(isExpanded ? null : category)}
+                    >
+                      <View style={styles.categoryDropdownHeaderLeft}>
+                        <Text style={[styles.categoryDropdownTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>
+                          {category}
+                        </Text>
+                        <Text style={[styles.categoryDropdownCount, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+                          {categoryFoods.length} items
+                        </Text>
+                      </View>
+                      <Ionicons
+                        name={isExpanded ? "chevron-up" : "chevron-down"}
+                        size={20}
+                        color={colors.textSecondary}
+                      />
+                    </TouchableOpacity>
+
+                    {isExpanded && (
+                      <View style={[styles.categoryDropdownContent, { backgroundColor: colors.surface }]}>
+                        {categoryFoods.map((food) => (
+                          <TouchableOpacity
+                            key={food.id}
+                            style={[styles.categoryFoodItem, { borderBottomColor: colors.border }]}
+                            onPress={() => {
+                              setSearchQuery(food.name);
+                              const results = searchFoodDatabase(food.name);
+                              setSearchResults(results);
+                              setExpandedCategory(null);
+                            }}
+                          >
+                            <View style={styles.categoryFoodItemLeft}>
+                              <Text style={[styles.categoryFoodItemName, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>
+                                {food.name}
+                              </Text>
+                              <Text style={[styles.categoryFoodItemNutrition, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+                                {food.calories} cal • {food.sugar}g sugar
+                              </Text>
+                            </View>
+                            <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+            </ScrollView>
+          )}
 
           {/* Search Results */}
-          {searchQuery.length === 0 ? (
-            <View style={styles.emptySearchState}>
-              <Ionicons name="search" size={48} color={colors.textSecondary} />
-              <Text style={[styles.emptySearchTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Search for foods</Text>
-              <Text style={[styles.emptySearchText, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
-                Try searching for "apple", "chicken", "rice", etc.
+          {searchQuery.length === 0 ? null : isSearching ? (
+            <View style={styles.loadingState}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={[styles.loadingText, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>
+                Searching foods...
               </Text>
             </View>
           ) : searchResults.length === 0 ? (
@@ -760,9 +887,31 @@ export default function AddMealScreen() {
               <Ionicons name="sad-outline" size={48} color={colors.textSecondary} />
               <Text style={[styles.emptySearchTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>No foods found</Text>
               <Text style={[styles.emptySearchText, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Try a different search term</Text>
+              <TouchableOpacity
+                style={[styles.backToCategoriesButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                onPress={() => {
+                  setSearchQuery('');
+                  setSearchResults([]);
+                }}
+              >
+                <Ionicons name="arrow-back" size={20} color={colors.primary} />
+                <Text style={[styles.backToCategoriesText, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Back to Categories</Text>
+              </TouchableOpacity>
             </View>
           ) : (
-            <FlatList
+            <>
+              {/* Back button when showing search results */}
+              <TouchableOpacity
+                style={[styles.backToCategoriesButtonTop, { backgroundColor: colors.surface }]}
+                onPress={() => {
+                  setSearchQuery('');
+                  setSearchResults([]);
+                }}
+              >
+                <Ionicons name="arrow-back" size={20} color={colors.primary} />
+                <Text style={[styles.backToCategoriesText, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Back to Categories</Text>
+              </TouchableOpacity>
+              <FlatList
               data={searchResults}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
@@ -794,6 +943,7 @@ export default function AddMealScreen() {
               )}
               style={styles.searchResults}
             />
+            </>
           )}
         </View>
       </Modal>
@@ -1099,6 +1249,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingVertical: Spacing.sm,
   },
   card: {
     borderRadius: BorderRadius.lg,
@@ -1189,6 +1340,24 @@ const styles = StyleSheet.create({
     color: "#666666",
     marginTop: Spacing.xs,
   },
+  foodListHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  clearAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+  },
+  clearAllButtonText: {
+    fontWeight: '600',
+    color: "#FF6B6B",
+  },
   totalsCard: {
     backgroundColor: "transparent",
     borderRadius: BorderRadius.lg,
@@ -1265,30 +1434,118 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     color: "#333333",
   },
-  categoriesScroll: {
-    padding: Spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-  },
-  categoryChip: {
+  apiWarning: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
-    marginRight: Spacing.sm,
+    marginTop: Spacing.sm,
+    borderRadius: BorderRadius.sm,
   },
-  categoryChipActive: {
-    backgroundColor: "transparent",
+  apiWarningContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
-  categoryChipText: {
+  apiWarningText: {
+    fontSize: 11,
+    color: "#666666",
+  },
+  apiWarningButton: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.sm,
+  },
+  apiWarningButtonText: {
+    fontWeight: '600',
+    fontSize: 11,
+  },
+  loadingState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.xxl,
+  },
+  loadingText: {
+    marginTop: Spacing.md,
+    color: "#666666",
+  },
+  // Dropdown styles
+  categoriesDropdowns: {
+    flex: 1,
+  },
+  categoryDropdown: {
+    borderBottomWidth: 1,
+  },
+  categoryDropdownHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+  },
+  categoryDropdownHeaderLeft: {
+    flex: 1,
+  },
+  categoryDropdownTitle: {
+    fontWeight: Typography.fontWeight.semibold,
     color: "#333333",
   },
-  categoryChipTextActive: {
-    color: "#FFFFFF",
-    fontWeight: '600',
+  categoryDropdownCount: {
+    fontSize: 12,
+    color: "#666666",
+    marginTop: 2,
+  },
+  categoryDropdownContent: {
+    paddingHorizontal: Spacing.md,
+  },
+  categoryFoodItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderBottomWidth: 1,
+  },
+  categoryFoodItemLeft: {
+    flex: 1,
+  },
+  categoryFoodItemName: {
+    fontWeight: '500',
+    color: "#333333",
+  },
+  categoryFoodItemNutrition: {
+    fontSize: 12,
+    color: "#666666",
+    marginTop: 2,
   },
   emptySearchState: {
     alignItems: 'center',
     padding: Spacing.xxl,
+  },
+  backToCategoriesButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    marginTop: Spacing.md,
+  },
+  backToCategoriesButtonTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    marginHorizontal: Spacing.md,
+    marginTop: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    alignSelf: 'flex-start',
+  },
+  backToCategoriesText: {
+    fontWeight: '600',
+    marginLeft: Spacing.xs,
   },
   emptySearchTitle: {
     fontWeight: '600',
