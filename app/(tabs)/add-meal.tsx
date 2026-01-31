@@ -762,8 +762,8 @@ export default function AddMealScreen() {
         animationType="slide"
         presentationStyle="pageSheet"
       >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
+        <View style={[styles.modalContainer, { backgroundColor: colors.background }]}>
+          <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
             <TouchableOpacity onPress={() => setShowFoodSearch(false)}>
               <Text style={[styles.modalCancel, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Cancel</Text>
             </TouchableOpacity>
@@ -772,7 +772,7 @@ export default function AddMealScreen() {
           </View>
 
           {/* Search Input */}
-          <View style={styles.searchSection}>
+          <View style={[styles.searchSection, { borderBottomColor: colors.border }]}>
             <View style={[styles.searchInputWrapper, { backgroundColor: colors.surface }]}>
               <Ionicons name="search" size={20} color={colors.textSecondary} />
               <TextInput
@@ -1399,7 +1399,6 @@ const styles = StyleSheet.create({
   // Modal styles
   modalContainer: {
     flex: 1,
-    backgroundColor: "transparent",
   },
   modalHeader: {
     flexDirection: 'row',
@@ -1407,19 +1406,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: Spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
   },
   modalCancel: {
-    color: "#FF6B6B",
+    fontWeight: '600',
   },
   modalTitle: {
     fontWeight: 'bold',
-    color: "#333333",
   },
   searchSection: {
     padding: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
   },
   searchInputWrapper: {
     flexDirection: 'row',
