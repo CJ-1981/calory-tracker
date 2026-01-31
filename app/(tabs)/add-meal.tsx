@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -21,7 +21,7 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 import { Spacing, BorderRadius, Typography } from '../../src/theme';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { MealType, FoodItem, Meal } from '../../src/models';
-import { addMeal, loadPresets, savePreset, deletePreset } from '../../src/store';
+import { addMeal, loadPresets, savePreset, deletePreset, loadRecentFoods, addRecentFood, loadFavoriteFoods, toggleFavoriteFood, clearRecentFoods, removeFavoriteFood } from '../../src/store';
 import { calculateMealTotals, calculateNutrition } from '../../src/utils/calculator';
 import { MEAL_TYPES } from '../../src/utils/constants';
 import { AppDispatch } from '../../src/store';
@@ -32,11 +32,14 @@ import {
   foodCategories,
   FoodDatabaseItem,
   searchFoodDatabase,
+  getFoodById,
 } from '../../src/utils/foodDatabase';
 import { searchUSDAFoods, isUSDAApiConfigured } from '../../src/utils/usdaApi';
 import { Alert } from '../../src/utils/alert';
 import { scaledFontSize } from '../../src/utils/fontUtils';
 import { MealPreset } from '../../src/models/Meal';
+import { RecentFoodsSection } from '../../src/components/RecentFoodsSection';
+import { FavoriteFoodsSection } from '../../src/components/FavoriteFoodsSection';
 
 export default function AddMealScreen() {
   const router = useRouter();
@@ -44,11 +47,15 @@ export default function AddMealScreen() {
   const { colors, fontScale } = useTheme();
   const meals = useSelector((state: RootState) => state.meals.meals) || [];
   const presets = useSelector((state: RootState) => state.presets.presets) || [];
+  const recentFoods = useSelector((state: RootState) => state.foodHistory?.recentFoods ?? []);
+  const favoriteFoods = useSelector((state: RootState) => state.foodHistory?.favoriteFoods ?? []);
 
-  // Load presets on mount
+  // Load presets and food history on mount
   useEffect(() => {
     dispatch(loadPresets());
-  }, []);
+    dispatch(loadRecentFoods());
+    dispatch(loadFavoriteFoods());
+  }, [dispatch]);
 
   // Check if USDA API is configured when screen comes into focus
   useFocusEffect(
@@ -97,6 +104,11 @@ export default function AddMealScreen() {
   const [showPresetModal, setShowPresetModal] = useState(false);
   const [showSavePresetDialog, setShowSavePresetDialog] = useState(false);
   const [presetName, setPresetName] = useState('');
+
+  // Memoize favorite food IDs to avoid recreating array on every render
+  const favoriteFoodIds = useMemo(() => {
+    return (favoriteFoods || []).map((f: any) => f.foodId);
+  }, [favoriteFoods]);
 
   const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     if (Platform.OS === 'android') {
@@ -245,7 +257,8 @@ export default function AddMealScreen() {
       {
         ...calculatedFood,
         foodId: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-        quantity: portionSize,
+        quantity: 1, // Store as 1 item/portion, not the weight
+        originalQuantity: portionSize, // Store actual weight for reference
       },
     ]);
 
@@ -254,6 +267,24 @@ export default function AddMealScreen() {
         foodId: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
         quantity: portionSize,
       }]);
+
+    // Track recent food
+    dispatch(addRecentFood({
+      foodId: food.id,
+      name: food.name,
+      category: food.category,
+      quantity: portionSize,
+      servingSize: food.servingSize,
+      servingUnit: food.servingUnit,
+      calories: calculatedFood.calories,
+      sugar: calculatedFood.sugar,
+      protein: calculatedFood.protein,
+      carbs: calculatedFood.carbs,
+      fat: calculatedFood.fat,
+      commonPortions: food.commonPortions,
+      lastUsedAt: Date.now(),
+      portionIndex,
+    }));
 
     Alert.alert('Added!', `${food.name} (${food.commonPortions[portionIndex]?.name || portionSize}${food.servingUnit}) added to meal.`);
     setShowFoodSearch(false);
@@ -264,6 +295,27 @@ export default function AddMealScreen() {
 
   const removeFood = (foodId: string) => {
     setCurrentFoods(currentFoods.filter((f) => f.foodId !== foodId));
+  };
+
+  const updateFoodQuantity = (foodId: string, change: number) => {
+    setCurrentFoods(currentFoods.map((food) => {
+      if (food.foodId === foodId) {
+        const currentCount = food.quantity || 1;
+        const newCount = Math.max(1, currentCount + change);
+
+        // Nutrition is stored per item, so just multiply by the count
+        return {
+          ...food,
+          quantity: newCount,
+          calories: Math.round((food.calories / currentCount) * newCount),
+          sugar: Math.round((food.sugar / currentCount) * newCount * 10) / 10,
+          protein: Math.round((food.protein / currentCount) * newCount * 10) / 10,
+          carbs: Math.round((food.carbs / currentCount) * newCount * 10) / 10,
+          fat: Math.round((food.fat / currentCount) * newCount * 10) / 10,
+        };
+      }
+      return food;
+    }));
   };
 
   const clearAllFoods = () => {
@@ -279,6 +331,27 @@ export default function AddMealScreen() {
         },
       ]
     );
+  };
+
+  const handleToggleFavorite = (food: FoodDatabaseItem) => {
+    dispatch(toggleFavoriteFood({
+      foodId: food.id,
+      name: food.name,
+      category: food.category,
+      servingSize: food.servingSize,
+      servingUnit: food.servingUnit,
+      calories: food.calories,
+      sugar: food.sugar,
+      protein: food.protein,
+      carbs: food.carbs,
+      fat: food.fat,
+      commonPortions: food.commonPortions,
+      defaultPortionIndex: 0,
+    }));
+  };
+
+  const isFavorite = (foodId: string) => {
+    return favoriteFoods.some((f: any) => f.foodId === foodId);
   };
 
   const handleSearch = (text: string) => {
@@ -539,6 +612,47 @@ export default function AddMealScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Recent Foods Section */}
+        {recentFoods.length > 0 && (
+          <View style={styles.section}>
+            <RecentFoodsSection
+              recentFoods={recentFoods}
+              onAddFood={(entry) => {
+                // Reconstruct food object from recent food entry
+                const food = {
+                  id: entry.foodId,
+                  name: entry.name,
+                  category: entry.category,
+                  servingSize: entry.servingSize,
+                  servingUnit: entry.servingUnit,
+                  calories: entry.calories,
+                  sugar: entry.sugar,
+                  protein: entry.protein,
+                  carbs: entry.carbs,
+                  fat: entry.fat,
+                  commonPortions: entry.commonPortions,
+                };
+                addFoodFromDatabase(food, entry.portionIndex);
+              }}
+              onClearAll={() => dispatch(clearRecentFoods())}
+              favoriteFoodIds={favoriteFoodIds}
+            />
+          </View>
+        )}
+
+        {/* Favorites Section */}
+        {favoriteFoods.length > 0 && (
+          <View style={styles.section}>
+            <FavoriteFoodsSection
+              favoriteFoods={favoriteFoods}
+              onAddFood={(food: any, portionIndex: number) => {
+                addFoodFromDatabase(food, portionIndex);
+              }}
+              onRemoveFavorite={(foodId: string) => dispatch(removeFavoriteFood(foodId))}
+            />
+          </View>
+        )}
+
         {/* Preset Buttons */}
         <View style={styles.section}>
           <View style={styles.presetButtonsRow}>
@@ -703,10 +817,30 @@ export default function AddMealScreen() {
                 <View style={styles.flex1}>
                   <Text style={[styles.foodName, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{food.name}</Text>
                   <Text style={[styles.foodDetails, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
-                    {food.quantity}{food.servingUnit} • {food.calories} cal • {food.sugar}g sugar
+                    {food.originalQuantity || food.quantity}{food.servingUnit} • {food.calories} cal • {food.sugar}g sugar
                   </Text>
                 </View>
-                <TouchableOpacity onPress={() => removeFood(food.foodId)}>
+                <View style={styles.quantityControls}>
+                  <TouchableOpacity
+                    style={[styles.quantityButton, { backgroundColor: colors.background }]}
+                    onPress={() => updateFoodQuantity(food.foodId, -1)}
+                  >
+                    <Ionicons name="remove-outline" size={18} color={colors.primary} />
+                  </TouchableOpacity>
+                  <Text style={[styles.quantityValue, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>
+                    {food.quantity}
+                  </Text>
+                  <Text style={[styles.quantityLabel, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+                    {food.quantity === 1 ? 'item' : 'items'}
+                  </Text>
+                  <TouchableOpacity
+                    style={[styles.quantityButton, { backgroundColor: colors.background }]}
+                    onPress={() => updateFoodQuantity(food.foodId, 1)}
+                  >
+                    <Ionicons name="add-outline" size={18} color={colors.primary} />
+                  </TouchableOpacity>
+                </View>
+                <TouchableOpacity onPress={() => removeFood(food.foodId)} style={styles.removeButton}>
                   <Ionicons name="trash-outline" size={20} color={colors.danger} />
                 </TouchableOpacity>
               </View>
@@ -917,7 +1051,16 @@ export default function AddMealScreen() {
               renderItem={({ item }) => (
                 <View style={[styles.foodSearchResult, { backgroundColor: colors.surface }]}>
                   <View style={styles.foodSearchInfo}>
-                    <Text style={[styles.foodSearchName, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{item.name}</Text>
+                    <View style={styles.foodSearchHeader}>
+                      <Text style={[styles.foodSearchName, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>{item.name}</Text>
+                      <TouchableOpacity onPress={() => handleToggleFavorite(item)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                        <Ionicons
+                          name={isFavorite(item.id) ? "heart" : "heart-outline"}
+                          size={20}
+                          color={isFavorite(item.id) ? colors.danger : colors.textSecondary}
+                        />
+                      </TouchableOpacity>
+                    </View>
                     <Text style={[styles.foodSearchCategory, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>{item.category}</Text>
                     <Text style={[styles.foodSearchNutrition, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
                       {item.calories} cal • {item.sugar}g sugar
@@ -1340,6 +1483,33 @@ const styles = StyleSheet.create({
     color: "#666666",
     marginTop: Spacing.xs,
   },
+  quantityControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: Spacing.sm,
+  },
+  quantityButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 4,
+  },
+  quantityValue: {
+    fontWeight: '600',
+    marginHorizontal: 8,
+    minWidth: 30,
+    textAlign: 'center',
+  },
+  quantityLabel: {
+    fontSize: 11,
+    marginRight: 4,
+  },
+  removeButton: {
+    marginLeft: Spacing.sm,
+    padding: 4,
+  },
   foodListHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1564,9 +1734,15 @@ const styles = StyleSheet.create({
   foodSearchInfo: {
     marginBottom: Spacing.sm,
   },
+  foodSearchHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   foodSearchName: {
     fontWeight: '600',
     color: "#333333",
+    flex: 1,
   },
   foodSearchCategory: {
     color: "#FF6B6B",
