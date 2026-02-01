@@ -1,9 +1,10 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import { Platform } from 'react-native';
 
 import { useTheme } from '../../src/contexts/ThemeContext';
-import { Colors } from '../../src/theme';
+import { Colors, Spacing } from '../../src/theme';
 
 export default function TabLayout() {
   const { colors } = useTheme();
@@ -14,13 +15,33 @@ export default function TabLayout() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
         headerShown: false,
+        tabBarStyle: {
+          height: Platform.select({
+            ios: 88,
+            android: 70,
+            default: 70,
+          }),
+          paddingBottom: Platform.select({
+            ios: 28,
+            android: 10,
+            default: 10,
+          }),
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '600',
+        },
+        tabBarItemStyle: {
+          paddingVertical: 4,
+        },
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Dashboard',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
+            <Ionicons name="home" size={28} color={color} />
           ),
         }}
       />
@@ -29,7 +50,7 @@ export default function TabLayout() {
         options={{
           title: 'Add Meal',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-circle" size={size} color={color} />
+            <Ionicons name="add-circle" size={28} color={color} />
           ),
         }}
       />
@@ -38,7 +59,7 @@ export default function TabLayout() {
         options={{
           title: 'History',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="stats-chart" size={size} color={color} />
+            <Ionicons name="stats-chart" size={28} color={color} />
           ),
         }}
       />
@@ -47,7 +68,7 @@ export default function TabLayout() {
         options={{
           title: 'Goals',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="trophy" size={size} color={color} />
+            <Ionicons name="trophy" size={28} color={color} />
           ),
         }}
       />
@@ -56,7 +77,7 @@ export default function TabLayout() {
         options={{
           title: 'Settings',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings" size={size} color={color} />
+            <Ionicons name="settings" size={28} color={color} />
           ),
         }}
       />
