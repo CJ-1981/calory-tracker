@@ -16,6 +16,7 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.textSecondary,
         headerShown: false,
         tabBarShowLabel: true,
+        tabBarLabelPosition: 'below-icon',
         tabBarStyle: {
           height: Platform.select({
             ios: 95,
