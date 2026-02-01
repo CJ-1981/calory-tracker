@@ -228,9 +228,9 @@ export default function SettingsScreen() {
           <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>About</Text>
           <View style={[styles.infoCard, { backgroundColor: colors.surface }]}>
             <Text style={[styles.appName, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Calorie & Sugar Tracker</Text>
-            <Text style={[styles.version, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Version 1.3.0</Text>
+            <Text style={[styles.version, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Version 1.3.1</Text>
             <Text style={[styles.version, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>
-              Added editable quantity, serving size modification, instant local search results
+              UI improvements: larger tab bar, fixed label visibility, fixed font preview overlap
             </Text>
           </View>
         </View>
