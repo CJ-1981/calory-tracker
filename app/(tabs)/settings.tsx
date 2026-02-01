@@ -501,8 +501,6 @@ const styles = StyleSheet.create({
   },
   previewText: {
     lineHeight: Typography.lineHeight.normal,
-    flex: 1,
-    flexWrap: 'wrap',
   },
   infoCard: {
     borderRadius: BorderRadius.lg,
