@@ -16,19 +16,18 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.textSecondary,
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarLabelPosition: 'below-icon',
         tabBarStyle: {
           height: Platform.select({
-            ios: 95,
-            android: 70,
-            default: 70,
+            ios: 100,
+            android: 80,
+            default: 80,
           }),
           paddingBottom: Platform.select({
-            ios: 5,
-            android: 10,
-            default: 10,
+            ios: 10,
+            android: 8,
+            default: 8,
           }),
-          paddingTop: 10,
+          paddingTop: 8,
         },
         tabBarLabelStyle: {
           fontSize: 12,
