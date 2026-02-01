@@ -17,12 +17,12 @@ export default function TabLayout() {
         headerShown: false,
         tabBarStyle: {
           height: Platform.select({
-            ios: 88,
+            ios: 80,
             android: 70,
             default: 70,
           }),
           paddingBottom: Platform.select({
-            ios: 28,
+            ios: 8,
             android: 10,
             default: 10,
           }),
