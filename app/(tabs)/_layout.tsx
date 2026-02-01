@@ -17,16 +17,16 @@ export default function TabLayout() {
         headerShown: false,
         tabBarStyle: {
           height: Platform.select({
-            ios: 80,
+            ios: 95,
             android: 70,
             default: 70,
           }),
           paddingBottom: Platform.select({
-            ios: 8,
+            ios: 5,
             android: 10,
             default: 10,
           }),
-          paddingTop: 8,
+          paddingTop: 10,
         },
         tabBarLabelStyle: {
           fontSize: 12,
