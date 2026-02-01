@@ -186,9 +186,11 @@ export default function SettingsScreen() {
             </View>
             <View style={[styles.previewContainer, { borderTopColor: colors.border }]}>
               <Text style={[styles.previewLabel, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Preview:</Text>
-              <Text style={[styles.previewText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>
-                This is how text will appear with the selected font size.
-              </Text>
+              <View style={styles.previewTextWrapper}>
+                <Text style={[styles.previewText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>
+                  This is how text will appear with the selected font size.
+                </Text>
+              </View>
             </View>
           </View>
         </View>
@@ -499,8 +501,11 @@ const styles = StyleSheet.create({
     fontWeight: Typography.fontWeight.medium,
     marginBottom: Spacing.xs,
   },
+  previewTextWrapper: {
+    width: '100%',
+  },
   previewText: {
-    lineHeight: Typography.lineHeight.normal,
+    lineHeight: 22,
   },
   infoCard: {
     borderRadius: BorderRadius.lg,
