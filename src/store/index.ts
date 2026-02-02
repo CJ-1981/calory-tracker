@@ -36,9 +36,9 @@ export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
 // Re-export actions and types
-export { loadMeals, addMeal, updateMeal, deleteMeal } from './mealSlice';
+export { loadMeals, addMeal, updateMeal, deleteMeal, restoreMeal, permanentDeleteMeal } from './mealSlice';
 export { loadGoals, updateGoal, setDefaultGoal } from './goalSlice';
-export { loadSettings, setDarkMode, setFontSize, FONT_SCALE_MULTIPLIERS } from './settingsSlice';
+export { loadSettings, setDarkMode, setFontSize, setUserName, FONT_SCALE_MULTIPLIERS } from './settingsSlice';
 export { loadPresets, savePreset, deletePreset } from './presetSlice';
 export {
   loadRecentFoods,

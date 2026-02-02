@@ -20,7 +20,7 @@ import type { AppDispatch } from '../../src/store';
 import { Colors, Spacing, BorderRadius, Typography } from '../../src/theme';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { RootState, DarkModePreference, FontSizeScale, SettingsState } from '../../src/store';
-import { setDarkMode as setDarkModeAction, setFontSize as setFontSizeAction } from '../../src/store/settingsSlice';
+import { setDarkMode as setDarkModeAction, setFontSize as setFontSizeAction, setUserName } from '../../src/store/settingsSlice';
 import { testUSDAApiConnection } from '../../src/utils/usdaApi';
 import { resetOnboarding } from '../onboarding';
 import { scaledFontSize } from '../../src/utils/fontUtils';
@@ -53,9 +53,12 @@ export default function SettingsScreen() {
   const { isDark, colors, fontScale, fontSize } = useTheme();
   const settings = useSelector((state: RootState) => state.settings) as SettingsState;
   const darkMode = settings?.darkMode ?? 'system';
+  const userName = settings?.userName ?? '';
   const deletedMeals = useSelector((state: RootState) => selectDeletedMeals(state));
 
   const [usdaApiKey, setUsdaApiKey] = useState('');
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [nameInput, setNameInput] = useState('');
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [isTestingApi, setIsTestingApi] = useState(false);
   const [apiTestResult, setApiTestResult] = useState<{ success: boolean; message: string } | null>(null);
@@ -307,6 +310,22 @@ export default function SettingsScreen() {
     dispatch(setFontSizeAction(size));
   };
 
+  const handleSaveName = () => {
+    const nameToSave = nameInput.trim();
+    if (nameToSave) {
+      dispatch(setUserName(nameToSave));
+    } else {
+      // If empty, clear the name
+      dispatch(setUserName(''));
+    }
+    setShowNameModal(false);
+  };
+
+  const openNameModal = () => {
+    setNameInput(userName);
+    setShowNameModal(true);
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.primary }]}>
@@ -314,6 +333,30 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView style={styles.content}>
+        {/* Personalization Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Personalization</Text>
+
+          {/* Name Setting */}
+          <TouchableOpacity
+            style={[styles.card, { backgroundColor: colors.surface }]}
+            onPress={openNameModal}
+            accessibilityLabel="Change your name"
+            accessibilityRole="button"
+          >
+            <View style={styles.settingHeader}>
+              <Ionicons name="person" size={24} color={colors.primary} />
+              <View style={styles.settingContent}>
+                <Text style={[styles.settingTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Your Name</Text>
+                <Text style={[styles.settingDescription, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+                  {userName ? userName : 'Not set'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+            </View>
+          </TouchableOpacity>
+        </View>
+
         {/* Accessibility Section */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Accessibility</Text>
@@ -760,6 +803,75 @@ export default function SettingsScreen() {
                 style={[styles.modalButton, styles.modalButtonPrimary, { backgroundColor: colors.primary }]}
                 onPress={saveUsdaApiKey}
                 accessibilityLabel="Save API key"
+                accessibilityRole="button"
+              >
+                <Text style={[styles.modalButtonText, { color: '#fff', fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>
+                  Save
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Name Edit Modal */}
+      <Modal
+        visible={showNameModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowNameModal(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>
+                Your Name
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowNameModal(false)}
+                accessibilityLabel="Close"
+                accessibilityRole="button"
+              >
+                <Ionicons name="close" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={[styles.modalDescription, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+              Enter the name you&apos;d like us to use to personalize your experience.
+            </Text>
+
+            <View style={styles.inputContainer}>
+              <Text style={[styles.label, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>
+                Name
+              </Text>
+              <TextInput
+                style={[styles.input, { borderColor: colors.border, color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}
+                value={nameInput}
+                onChangeText={setNameInput}
+                placeholder="Enter your name"
+                placeholderTextColor={colors.textSecondary}
+                autoCapitalize="words"
+                autoCorrect={false}
+                maxLength={30}
+                accessibilityLabel="Name input"
+              />
+            </View>
+
+            <View style={styles.modalButtonRow}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonSecondary, { borderColor: colors.border }]}
+                onPress={() => setShowNameModal(false)}
+                accessibilityLabel="Cancel"
+                accessibilityRole="button"
+              >
+                <Text style={[styles.modalButtonText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonPrimary, { backgroundColor: colors.primary }]}
+                onPress={handleSaveName}
+                accessibilityLabel="Save name"
                 accessibilityRole="button"
               >
                 <Text style={[styles.modalButtonText, { color: '#fff', fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>

@@ -16,7 +16,7 @@ import { useDispatch } from 'react-redux';
 import { Spacing, BorderRadius, Typography } from '../src/theme';
 import { useTheme } from '../src/contexts/ThemeContext';
 import { scaledFontSize } from '../src/utils/fontUtils';
-import { updateGoal } from '../src/store';
+import { updateGoal, setUserName } from '../src/store';
 import { Goal } from '../src/models';
 import { GoalRecommendations } from '../src/components/GoalRecommendations';
 
@@ -35,41 +35,51 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
 
   const [currentScreen, setCurrentScreen] = useState(0);
   const [apiKey, setApiKey] = useState('');
+  const [userName, setUserNameInput] = useState('');
 
   const onboardingScreens = [
     {
       id: 1,
-      icon: 'nutrition',
-      title: 'Welcome to Calorie Tracker',
-      subtitle: 'Your Personal Nutrition Companion',
-      description: 'Track your daily food intake, monitor sugar consumption, and achieve your health goals with our easy-to-use tracker.',
+      icon: 'person',
+      title: 'Let\'s Get to Know You',
+      subtitle: 'What should we call you?',
+      description: 'Enter your name to personalize your experience. You can always change this later in Settings.',
+      isNameScreen: true,
       backgroundColor: colors.primary,
     },
     {
       id: 2,
-      icon: 'flame',
-      title: 'Track Your Meals',
-      subtitle: 'Log What You Eat',
-      description: 'Search from 400,000+ foods in our USDA database or add custom foods. Track calories, sugar, protein, carbs, and fat.',
+      icon: 'nutrition',
+      title: 'Welcome to Calorie Tracker',
+      subtitle: 'Your Personal Nutrition Companion',
+      description: 'Track your daily food intake, monitor sugar consumption, and achieve your health goals with our easy-to-use tracker.',
       backgroundColor: colors.secondary,
     },
     {
       id: 3,
+      icon: 'flame',
+      title: 'Track Your Meals',
+      subtitle: 'Log What You Eat',
+      description: 'Search from 400,000+ foods in our USDA database or add custom foods. Track calories, sugar, protein, carbs, and fat.',
+      backgroundColor: colors.warning,
+    },
+    {
+      id: 4,
       icon: 'trophy',
       title: 'Set Your Goals',
       subtitle: 'Personalized Recommendations',
       description: 'We\'ll help you set personalized nutritional goals based on health guidelines. You can customize these anytime.',
       isGoalScreen: true,
-      backgroundColor: colors.warning,
+      backgroundColor: colors.info,
     },
     {
-      id: 4,
+      id: 5,
       icon: 'key',
       title: 'USDA API Key',
       subtitle: 'Unlock Full Food Database',
       description: 'Get your free USDA API key to access 400,000+ foods. You can also add this later in Settings.',
       isApiKeyScreen: true,
-      backgroundColor: colors.info,
+      backgroundColor: colors.success,
     },
   ];
 
@@ -111,6 +121,19 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     } catch (error) {
       console.error('Error saving goal:', error);
     }
+  };
+
+  const handleSaveName = async () => {
+    const nameToSave = userName.trim();
+    try {
+      if (nameToSave) {
+        dispatch(setUserName(nameToSave));
+      }
+    } catch (error) {
+      console.error('Error saving name:', error);
+    }
+    // Move to next screen
+    setCurrentScreen(currentScreen + 1);
   };
 
   const handleSaveApiKey = async () => {
@@ -155,6 +178,105 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
   const isLastScreen = currentScreen === onboardingScreens.length - 1;
   const isFirstScreen = currentScreen === 0;
   const currentScreenData = onboardingScreens[currentScreen];
+
+  // If this is the name screen, show name input
+  if (currentScreenData.isNameScreen) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        {/* Skip Button */}
+        <TouchableOpacity
+          style={styles.skipButton}
+          onPress={() => {
+            // Just move to next screen without saving a name
+            setCurrentScreen(currentScreen + 1);
+          }}
+          accessibilityLabel="Skip name setup"
+          accessibilityRole="button"
+        >
+          <Text style={[styles.skipButtonText, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Skip</Text>
+        </TouchableOpacity>
+
+        <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
+          {/* Screen Indicator */}
+          <View style={styles.indicatorContainer}>
+            {onboardingScreens.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.indicator,
+                  {
+                    backgroundColor: index === currentScreen ? colors.primary : colors.border,
+                    width: index === currentScreen ? 24 : 8,
+                  },
+                ]}
+              />
+            ))}
+          </View>
+
+          {/* Icon */}
+          <View style={[styles.iconContainer, { backgroundColor: currentScreenData.backgroundColor + '20' }]}>
+            <Ionicons
+              name={currentScreenData.icon as any}
+              size={80}
+              color={currentScreenData.backgroundColor}
+            />
+          </View>
+
+          {/* Title */}
+          <Text style={[styles.title, { color: currentScreenData.backgroundColor, fontSize: scaledFontSize(Typography.fontSize.xxl, fontScale) }]}>
+            {currentScreenData.title}
+          </Text>
+
+          {/* Subtitle */}
+          <Text style={[styles.subtitle, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>
+            {currentScreenData.subtitle}
+          </Text>
+
+          {/* Description */}
+          <Text style={[styles.description, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>
+            {currentScreenData.description}
+          </Text>
+
+          {/* Name Input Section */}
+          <View style={[styles.nameInputSection, { backgroundColor: colors.surface }]}>
+            <TextInput
+              style={[styles.nameInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}
+              value={userName}
+              onChangeText={setUserNameInput}
+              placeholder="Enter your name..."
+              placeholderTextColor={colors.textSecondary}
+              autoCapitalize="words"
+              autoCorrect={false}
+              autoFocus
+              maxLength={30}
+            />
+            <Text style={[styles.nameHint, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+              💡 This will be used to personalize your experience
+            </Text>
+          </View>
+        </ScrollView>
+
+        {/* Navigation Buttons */}
+        <View style={styles.navigation}>
+          <TouchableOpacity
+            style={[
+              styles.navButton,
+              styles.navButtonPrimary,
+              { backgroundColor: currentScreenData.backgroundColor },
+            ]}
+            onPress={handleSaveName}
+            accessibilityLabel="Continue"
+            accessibilityRole="button"
+          >
+            <Text style={[styles.navButtonTextPrimary, { color: '#fff', fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>
+              Continue
+            </Text>
+            <Ionicons name="arrow-forward" size={20} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   // If this is the goals screen, show goal recommendations
   if (currentScreenData.isGoalScreen) {
@@ -548,6 +670,24 @@ const styles = StyleSheet.create({
   apiKeyNote: {
     lineHeight: 20,
     fontStyle: 'italic',
+  },
+  nameInputSection: {
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    marginTop: Spacing.lg,
+    gap: Spacing.md,
+  },
+  nameInput: {
+    borderRadius: BorderRadius.md,
+    padding: Spacing.lg,
+    borderWidth: 1,
+    fontSize: 18,
+    fontWeight: Typography.fontWeight.semibold,
+  },
+  nameHint: {
+    lineHeight: 20,
+    fontStyle: 'italic',
+    textAlign: 'center',
   },
 });
 

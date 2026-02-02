@@ -10,6 +10,12 @@ export interface SettingsState {
   darkMode: DarkModePreference;
   fontSize: FontSizeScale;
   isLoaded: boolean;
+  userName: string;
+  dashboardPreferences: {
+    trendsExpanded: boolean;
+    macrosExpanded: boolean;
+    summaryView: boolean;
+  };
 }
 
 const FONT_SCALE_MULTIPLIERS: Record<FontSizeScale, number> = {
@@ -23,6 +29,12 @@ const initialState: SettingsState = {
   darkMode: 'system',
   fontSize: 'medium',
   isLoaded: false,
+  userName: '',
+  dashboardPreferences: {
+    trendsExpanded: true,
+    macrosExpanded: true,
+    summaryView: false,
+  },
 };
 
 // Async thunk to load settings from AsyncStorage
@@ -36,6 +48,12 @@ export const loadSettings = createAsyncThunk(
         return {
           darkMode: settings.darkMode || 'system',
           fontSize: settings.fontSize || 'medium',
+          userName: settings.userName || '',
+          dashboardPreferences: settings.dashboardPreferences || {
+            trendsExpanded: true,
+            macrosExpanded: true,
+            summaryView: false,
+          },
         };
       }
     } catch (error) {
@@ -44,6 +62,12 @@ export const loadSettings = createAsyncThunk(
     return {
       darkMode: 'system' as DarkModePreference,
       fontSize: 'medium' as FontSizeScale,
+      userName: '',
+      dashboardPreferences: {
+        trendsExpanded: true,
+        macrosExpanded: true,
+        summaryView: false,
+      },
     };
   }
 );
@@ -72,16 +96,26 @@ const settingsSlice = createSlice({
       state.fontSize = action.payload;
       saveSettingsToStorage({ fontSize: action.payload });
     },
+    setDashboardPreferences: (state, action: PayloadAction<Partial<SettingsState['dashboardPreferences']>>) => {
+      state.dashboardPreferences = { ...state.dashboardPreferences, ...action.payload };
+      saveSettingsToStorage({ dashboardPreferences: state.dashboardPreferences });
+    },
+    setUserName: (state, action: PayloadAction<string>) => {
+      state.userName = action.payload;
+      saveSettingsToStorage({ userName: action.payload });
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(loadSettings.fulfilled, (state, action) => {
       state.darkMode = action.payload.darkMode;
       state.fontSize = action.payload.fontSize;
+      state.userName = action.payload.userName;
+      state.dashboardPreferences = action.payload.dashboardPreferences;
       state.isLoaded = true;
     });
   },
 });
 
-export const { setDarkMode, setFontSize } = settingsSlice.actions;
+export const { setDarkMode, setFontSize, setDashboardPreferences, setUserName } = settingsSlice.actions;
 export { FONT_SCALE_MULTIPLIERS };
 export default settingsSlice;

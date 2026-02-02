@@ -17,8 +17,10 @@ import { ProgressBar } from '../../src/components/ProgressBar';
 import { SugarAlert } from '../../src/components/SugarAlert';
 import { MealCard } from '../../src/components/MealCard';
 import { TrendChart } from '../../src/components/TrendChart';
+import { OfflineBanner } from '../../src/components/OfflineBanner';
 import { RootState, AppDispatch } from '../../src/store';
 import { selectTodayMeals } from '../../src/store/mealSlice';
+import { setDashboardPreferences } from '../../src/store/settingsSlice';
 import { calculateDailyTotals } from '../../src/utils/calculator';
 import { checkGoalProgress, checkSugarWarnings, calculateDailySummary } from '../../src/services/analyticsService';
 import { Meal, DailyLog } from '../../src/models';
@@ -33,6 +35,9 @@ export default function DashboardScreen() {
   const todayMeals = useSelector((state: RootState) => selectTodayMeals(state)) || [];
   const activeGoal = useSelector((state: RootState) => state.goals.activeGoal);
   const allMeals = useSelector((state: RootState) => state.meals.meals) || [];
+  const dashboardPreferences = useSelector((state: RootState) => state.settings.dashboardPreferences);
+  const userName = useSelector((state: RootState) => state.settings.userName);
+  const displayName = userName && userName.trim() ? userName.trim() : null;
 
   const [dailyLog, setDailyLog] = useState<DailyLog | null>(null);
   const [warnings, setWarnings] = useState<any[]>([]);
@@ -63,6 +68,24 @@ export default function DashboardScreen() {
         },
       ]
     );
+  };
+
+  const handleEditMeal = (meal: Meal) => {
+    // TODO: Navigate to edit screen when implemented
+    Alert.alert('Edit Meal', 'Edit functionality coming soon!');
+  };
+
+  const handleCopyMeal = (meal: Meal) => {
+    // TODO: Implement copy meal functionality
+    Alert.alert('Copy Meal', 'Copy functionality coming soon!');
+  };
+
+  const toggleTrends = () => {
+    dispatch(setDashboardPreferences({ trendsExpanded: !dashboardPreferences.trendsExpanded }));
+  };
+
+  const toggleMacros = () => {
+    dispatch(setDashboardPreferences({ macrosExpanded: !dashboardPreferences.macrosExpanded }));
   };
 
   useEffect(() => {
@@ -134,7 +157,9 @@ export default function DashboardScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.primary }]}>
-        <Text style={[styles.headerTitle, { color: colors.background, fontSize: scaledFontSize(Typography.fontSize.xxl, fontScale) }]}>Today's Summary</Text>
+        <Text style={[styles.headerTitle, { color: colors.background, fontSize: scaledFontSize(Typography.fontSize.xxl, fontScale) }]}>
+          {displayName ? `Hi, ${displayName}! 👋` : 'Hi, there! 👋'}
+        </Text>
         <Text style={[styles.headerDate, { color: colors.background, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>
           {new Date().toLocaleDateString('en-US', {
             weekday: 'long',
@@ -143,6 +168,8 @@ export default function DashboardScreen() {
           })}
         </Text>
       </View>
+
+      <OfflineBanner />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Sugar Warnings */}
@@ -203,60 +230,101 @@ export default function DashboardScreen() {
         {/* Macros */}
         {dailyLog && (
           <View style={[styles.card, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.cardTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Macros</Text>
-            <View style={styles.macroRow}>
-              <View style={styles.macroItem}>
-                <Text style={[styles.macroValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>{dailyLog.totalProtein.toFixed(1)}g</Text>
-                <Text style={[styles.macroLabel, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>Protein</Text>
+            <TouchableOpacity
+              onPress={toggleMacros}
+              style={styles.collapsibleCardHeader}
+              accessibilityLabel="Toggle macros details"
+              accessibilityRole="button"
+              accessibilityState={{ expanded: dashboardPreferences.macrosExpanded }}
+            >
+              <Text style={[styles.cardTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Macros</Text>
+              <Ionicons
+                name={dashboardPreferences.macrosExpanded ? "chevron-up" : "chevron-down"}
+                size={24}
+                color={colors.text}
+              />
+            </TouchableOpacity>
+            {dashboardPreferences.macrosExpanded && (
+              <View style={styles.macroRow}>
+                <View style={styles.macroItem}>
+                  <Text style={[styles.macroValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>{dailyLog.totalProtein.toFixed(1)}g</Text>
+                  <Text style={[styles.macroLabel, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>Protein</Text>
+                </View>
+                <View style={styles.macroItem}>
+                  <Text style={[styles.macroValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>{dailyLog.totalCarbs.toFixed(1)}g</Text>
+                  <Text style={[styles.macroLabel, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>Carbs</Text>
+                </View>
+                <View style={styles.macroItem}>
+                  <Text style={[styles.macroValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>{dailyLog.totalFat.toFixed(1)}g</Text>
+                  <Text style={[styles.macroLabel, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>Fat</Text>
+                </View>
               </View>
-              <View style={styles.macroItem}>
-                <Text style={[styles.macroValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>{dailyLog.totalCarbs.toFixed(1)}g</Text>
-                <Text style={[styles.macroLabel, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>Carbs</Text>
-              </View>
-              <View style={styles.macroItem}>
-                <Text style={[styles.macroValue, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>{dailyLog.totalFat.toFixed(1)}g</Text>
-                <Text style={[styles.macroLabel, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>Fat</Text>
-              </View>
-            </View>
+            )}
           </View>
         )}
 
         {/* Daily Trends */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Daily Trends</Text>
+          <TouchableOpacity
+            onPress={toggleTrends}
+            style={styles.collapsibleSectionHeader}
+            accessibilityLabel="Toggle daily trends"
+            accessibilityRole="button"
+            accessibilityState={{ expanded: dashboardPreferences.trendsExpanded }}
+          >
+            <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Daily Trends</Text>
+            <Ionicons
+              name={dashboardPreferences.trendsExpanded ? "chevron-up" : "chevron-down"}
+              size={24}
+              color={colors.text}
+            />
+          </TouchableOpacity>
 
-          <TrendChart
-            data={caloriesChartData}
-            goalValue={activeGoal?.calorieTarget}
-            color={colors.primary}
-            title="Calories (7 days)"
-            unit="cal"
-            height={200}
-          />
+          {dashboardPreferences.trendsExpanded && (
+            <>
+              <TrendChart
+                data={caloriesChartData}
+                goalValue={activeGoal?.calorieTarget}
+                color={colors.primary}
+                title="Calories (7 days)"
+                unit="cal"
+                height={200}
+              />
 
-          <TrendChart
-            data={sugarChartData}
-            goalValue={activeGoal?.sugarTarget}
-            color={colors.secondary}
-            title="Sugar (7 days)"
-            unit="g"
-            height={200}
-          />
+              <TrendChart
+                data={sugarChartData}
+                goalValue={activeGoal?.sugarTarget}
+                color={colors.secondary}
+                title="Sugar (7 days)"
+                unit="g"
+                height={200}
+              />
+            </>
+          )}
         </View>
 
         {/* Today's Meals */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Today's Meals</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Today&apos;s Meals</Text>
             <TouchableOpacity onPress={() => router.push('/(tabs)/history')}>
               <Text style={[styles.seeAllText, { color: colors.primary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>See All</Text>
             </TouchableOpacity>
           </View>
           {todayMeals.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="restaurant-outline" size={48} color={colors.textSecondary} />
-              <Text style={[styles.emptyStateText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>No meals logged today</Text>
-              <Text style={[styles.emptyStateSubtext, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Tap the button below to add your first meal</Text>
+              <Ionicons name="restaurant-outline" size={64} color={colors.primary} />
+              <Text style={[styles.emptyStateText, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Start Tracking Today</Text>
+              <Text style={[styles.emptyStateSubtext, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Log your meals to monitor your nutrition and reach your goals</Text>
+              <TouchableOpacity
+                style={[styles.emptyStateButton, { backgroundColor: colors.primary }]}
+                onPress={() => router.push('/(tabs)/add-meal')}
+                accessibilityLabel="Add your first meal"
+                accessibilityRole="button"
+              >
+                <Ionicons name="add" size={24} color={colors.background} />
+                <Text style={[styles.emptyStateButtonText, { color: colors.background, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>Add Your First Meal</Text>
+              </TouchableOpacity>
             </View>
           ) : (
             todayMeals.map((meal) => (
@@ -265,6 +333,8 @@ export default function DashboardScreen() {
                 meal={meal}
                 onPress={() => router.push(`/meal/${meal.id}` as any)}
                 onDelete={() => handleDeleteMeal(meal)}
+                onEdit={() => handleEditMeal(meal)}
+                onCopy={() => handleCopyMeal(meal)}
               />
             ))
           )}
@@ -275,6 +345,9 @@ export default function DashboardScreen() {
       <TouchableOpacity
         style={[styles.fab, { backgroundColor: colors.primary }]}
         onPress={() => router.push('/(tabs)/add-meal')}
+        accessibilityLabel="Add new meal"
+        accessibilityRole="button"
+        accessibilityHint="Navigate to add meal screen"
       >
         <Ionicons name="add" size={28} color={colors.background} />
       </TouchableOpacity>
@@ -370,12 +443,24 @@ const styles = StyleSheet.create({
     padding: Spacing.xxl,
   },
   emptyStateText: {
-    fontWeight: Typography.fontWeight.medium,
-    marginTop: Spacing.md,
+    fontWeight: Typography.fontWeight.bold,
+    marginTop: Spacing.lg,
   },
   emptyStateSubtext: {
     textAlign: 'center',
-    marginTop: Spacing.xs,
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  emptyStateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    gap: Spacing.sm,
+  },
+  emptyStateButtonText: {
+    fontWeight: Typography.fontWeight.semibold,
   },
   fab: {
     position: 'absolute',
@@ -390,5 +475,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 4,
+  },
+  collapsibleCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  collapsibleSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
   },
 });
