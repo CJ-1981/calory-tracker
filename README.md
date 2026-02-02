@@ -2,6 +2,8 @@
 
 A comprehensive calorie and nutrition tracking app built with React Native and Expo. Track your daily food intake, monitor sugar consumption, set goals, and maintain a healthy lifestyle.
 
+<img width="747" height="1320" alt="image" src="https://github.com/user-attachments/assets/9c0d488d-0c44-4404-b804-ad2e8460b96d" />
+
 ## Features ✨
 
 ### 📊 Dashboard
