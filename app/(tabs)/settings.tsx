@@ -25,6 +25,7 @@ import { testUSDAApiConnection } from '../../src/utils/usdaApi';
 import { resetOnboarding } from '../onboarding';
 import { scaledFontSize } from '../../src/utils/fontUtils';
 import { exportBackupAsFile, importBackup, getLastBackupTime, getAutoBackupsInfo } from '../../src/utils/backupUtils';
+import { getAppVersion } from '../../src/utils/version';
 import { selectDeletedMeals } from '../../src/store/mealSlice';
 import { restoreMeal, permanentDeleteMeal } from '../../src/store';
 import { Meal } from '../../src/models';
@@ -441,9 +442,11 @@ export default function SettingsScreen() {
           <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.md, fontScale) }]}>About</Text>
           <View style={[styles.infoCard, { backgroundColor: colors.surface }]}>
             <Text style={[styles.appName, { color: colors.text, fontSize: scaledFontSize(Typography.fontSize.lg, fontScale) }]}>Calorie & Sugar Tracker</Text>
-            <Text style={[styles.version, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>Version 1.3.1</Text>
+            <Text style={[styles.version, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.sm, fontScale) }]}>
+              Version {getAppVersion()}
+            </Text>
             <Text style={[styles.version, { color: colors.textSecondary, fontSize: scaledFontSize(Typography.fontSize.xs, fontScale) }]}>
-              UI improvements: larger tab bar, fixed label visibility, fixed font preview overlap
+              New features: Editable goal recommendations, USDA API key onboarding, bug fixes
             </Text>
           </View>
         </View>
